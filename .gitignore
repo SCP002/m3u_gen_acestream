@@ -1,14 +1,10 @@
 # Ignore everything
 /*
 
-# Ignore these subdirectories
-**/__pycache__
-
 # Not these files
 !/.gitattributes
 !/.gitignore
 !/LICENSE
-!/mypy.ini
 !/README.md
 !/ROADMAP.md
 
