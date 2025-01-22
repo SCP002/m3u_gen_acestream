@@ -15,11 +15,13 @@ import (
 	"m3u_gen_acestream/util/logger"
 )
 
+// Config represents program configuration.
 type Config struct {
 	EngineAddr string     `yaml:"engineAddr"`
 	Playlists  []Playlist `yaml:"playlists"`
 }
 
+// Playlist represents set of parameters for M3U playlist generation such as output path, template and filter criterias.
 type Playlist struct {
 	OutputPath                   string            `yaml:"outputPath"`
 	HeaderTemplate               template.Template `yaml:"headerTemplate"`
@@ -28,7 +30,7 @@ type Playlist struct {
 	CategoriesFilter             []string          `yaml:"categoriesFilter"`
 	LanguagesFilter              []string          `yaml:"languagesFilter"`
 	CountriesFilter              []string          `yaml:"countriesFilter"`
-	ExcludeStatus                int               `yaml:"excludeStatus"`
+	StatusFilter                 []int             `yaml:"statusFilter"`
 	AvailabilityThreshold        float32           `yaml:"availabilityThreshold"`
 	AvailabilityUpdatedThreshold time.Duration     `yaml:"availabilityUpdatedThreshold"`
 }
@@ -105,6 +107,7 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 	return &cfg, false, nil
 }
 
+// newDefCfg returns new default config and comment map
 func newDefCfg() (*Config, yaml.CommentMap) {
 	headerLine := `#EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1`
 	entryLine1 := `#EXTINF:-1 group-title="{{.Categories}}" tvg-name="{{.TVGName}}" tvg-logo="{{.TVGLogo}}",{{.Name}}`
@@ -128,7 +131,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				CategoriesFilter:             []string{},
 				LanguagesFilter:              []string{},
 				CountriesFilter:              []string{},
-				ExcludeStatus:                2,
+				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        0.8,
 				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
 			},
@@ -140,7 +143,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				CategoriesFilter:             []string{"tv", "music"},
 				LanguagesFilter:              []string{},
 				CountriesFilter:              []string{},
-				ExcludeStatus:                2,
+				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        0.8,
 				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
 			},
@@ -152,7 +155,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				CategoriesFilter:             []string{},
 				LanguagesFilter:              []string{},
 				CountriesFilter:              []string{},
-				ExcludeStatus:                2,
+				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        0.8,
 				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
 			},
@@ -167,10 +170,10 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			yaml.HeadComment("", " Playlists to generate."),
 		},
 		"$.playlists[0]": []*yaml.Comment{
-			yaml.HeadComment("", " MPEG-TS format, no filtering by name, category of country."),
+			yaml.HeadComment("", " MPEG-TS format, no filtering by name, category or country."),
 		},
 		"$.playlists[0].outputPath": []*yaml.Comment{
-			yaml.HeadComment("", " Destination to write playlist to."),
+			yaml.HeadComment("", " Destination filepath to write playlist to."),
 		},
 		"$.playlists[0].headerTemplate": []*yaml.Comment{
 			yaml.HeadComment("", " Template for the first line of M3U file."),
@@ -182,7 +185,11 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			yaml.HeadComment("", " Only keep channels which name matches this regular expression."),
 		},
 		"$.playlists[0].categoriesFilter": []*yaml.Comment{
-			yaml.HeadComment("", " Only keep channels which category equals to any of these."),
+			yaml.HeadComment(
+				"",
+				" Only keep channels which category equals to any of these.",
+				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/ for categories list",
+			),
 		},
 		"$.playlists[0].languagesFilter": []*yaml.Comment{
 			yaml.HeadComment("", " Only keep channels which language equals to any of these."),
@@ -190,11 +197,19 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 		"$.playlists[0].countriesFilter": []*yaml.Comment{
 			yaml.HeadComment("", " Only keep channels which country equals to any of these."),
 		},
-		"$.playlists[0].excludeStatus": []*yaml.Comment{
-			yaml.HeadComment("", " Do not add channels with status equal to this."),
+		"$.playlists[0].statusFilter": []*yaml.Comment{
+			yaml.HeadComment(
+				"",
+				" Only keep channels which status equals to any of these.",
+				" Can be 1 (no guaranty that channel is working) or 2 (channel is available).",
+			),
 		},
 		"$.playlists[0].availabilityThreshold": []*yaml.Comment{
-			yaml.HeadComment("", " Only keep channels which availability equals to or more than this."),
+			yaml.HeadComment(
+				"",
+				" Only keep channels which availability equals to or more than this.",
+				" Can be between 0.0 (zero availability) and 1.0 (full availability).",
+			),
 		},
 		"$.playlists[0].availabilityUpdatedThreshold": []*yaml.Comment{
 			yaml.HeadComment("", " Only keep channels which availability was updated that much time ago or sooner."),
