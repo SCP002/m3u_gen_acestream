@@ -18,7 +18,7 @@ import (
 type Engine struct {
 	log        *logger.Logger
 	httpClient *http.Client
-	host       string
+	addr       string
 }
 
 // SearchResult represents available channels response to search request to engine.
@@ -60,12 +60,12 @@ type searchResp struct {
 	} `json:"result"`
 }
 
-// NewEngine returns new engine handler with it's address at `host`, which should be in format of 'host:port'.
-func NewEngine(log *logger.Logger, httpClient *http.Client, host string) *Engine {
-	return &Engine{log: log, httpClient: httpClient, host: host}
+// NewEngine returns new engine handler with it's address at `addr`, which should be in format of 'host:port'.
+func NewEngine(log *logger.Logger, httpClient *http.Client, addr string) *Engine {
+	return &Engine{log: log, httpClient: httpClient, addr: addr}
 }
 
-// WaitForConnection blocks current goroutine until engine responds with version info or until `ctx` deadling exceedes.
+// WaitForConnection blocks current goroutine until engine responds with version info or until `ctx` deadline exceedes.
 func (e Engine) WaitForConnection(ctx context.Context) {
 	ticker := time.NewTicker(time.Second * 5)
 	defer ticker.Stop()
@@ -78,7 +78,7 @@ func (e Engine) WaitForConnection(ctx context.Context) {
 		default:
 			break
 		}
-		url := url.URL{Scheme: "http", Host: e.host, Path: "webui/api/service", RawQuery: "method=get_version"}
+		url := url.URL{Scheme: "http", Host: e.addr, Path: "webui/api/service", RawQuery: "method=get_version"}
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 		if err != nil {
 			e.log.Error(errors.Wrap(err, "Connect to engine"))
@@ -137,7 +137,7 @@ func (e Engine) SearchAll(ctx context.Context) ([]SearchResult, error) {
 // searchAtPage returns acestream channels at page `page` with maximum page size.
 func (e Engine) searchAtPage(ctx context.Context, page int) ([]SearchResult, error) {
 	e.log.Debugf("Searching channels at page %v", page)
-	url := url.URL{Scheme: "http", Host: e.host, Path: "search", RawQuery: fmt.Sprintf("page_size=200&page=%v", page)}
+	url := url.URL{Scheme: "http", Host: e.addr, Path: "search", RawQuery: fmt.Sprintf("page_size=200&page=%v", page)}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 	if err != nil {
 		return []SearchResult{}, errors.Wrap(err, fmt.Sprintf("Search at page %v", page))
