@@ -2,13 +2,13 @@ package acestream
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
 
-	json "github.com/SCP002/jsonexraw"
 	"github.com/cockroachdb/errors"
 
 	"m3u_gen_acestream/util/logger"
@@ -34,11 +34,29 @@ type SearchResult struct {
 		Availability          float64  `json:"availability"`
 		Categories            []string `json:"categories"`
 	} `json:"items"`
-	Name  any `json:"name"` // Can be a string or number.
+	Name  string `json:"name"`
 	Icons []struct {
 		URL  string `json:"url"`
 		Type int    `json:"type"`
 	} `json:"icons"`
+}
+
+// UnmarshalJSON implements json.Unmarshaller interface and made to deal with problematic Name field which can be both
+// number or string.
+func (sr *SearchResult) UnmarshalJSON(bytes []byte) error {
+	type Embed SearchResult
+	tmp := struct {
+		Embed
+		Name any `json:"name"`
+	}{Embed: Embed(*sr)}
+
+	if err := json.Unmarshal(bytes, &tmp); err != nil {
+		return err
+	}
+	*sr = SearchResult(tmp.Embed)
+	sr.Name = fmt.Sprintf("%v", tmp.Name)
+
+	return nil
 }
 
 // versionResp represents response to version request to engine.

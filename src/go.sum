@@ -1,5 +1,3 @@
-github.com/SCP002/jsonexraw v0.1.0 h1:IHUn+G3C1KWzwMBl9R/3Nix3JT2Ekkp7alWvFAAC8/c=
-github.com/SCP002/jsonexraw v0.1.0/go.mod h1:Yt7yAKAsPZH9ZxSy3Gbcryz312Az6qnl2x7qhWInmck=
 github.com/adampresley/sigint v0.0.0-20150906022118-7e8d2ad16a94 h1:+ZZxOAOgtc5xZjeh4bt2JDKqYH5r91h8dVXF1KZabsU=
 github.com/adampresley/sigint v0.0.0-20150906022118-7e8d2ad16a94/go.mod h1:Z78z6BReSpl2eqVy/IxspW8YxnSkIcK3hXoxhiaaGZ8=
 github.com/cockroachdb/errors v1.11.3 h1:5bA+k2Y6r+oz/6Z/RFlNeVCesGARKuC6YymtcDrbC/I=
@@ -51,8 +49,6 @@ github.com/samber/lo v1.47.0 h1:z7RynLwP5nbyRscyvcD043DWYoOcYRv3mV8lBeqOCLc=
 github.com/samber/lo v1.47.0/go.mod h1:RmDH9Ct32Qy3gduHQuKJ3gW1fMHAnE/fAzQuf6He5cU=
 github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ8=
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
-github.com/yaegashi/jsonex.go v0.0.0-20191218175351-e6c64c300063 h1:kX5JTFEXMfW6/vQoMLXlohLsgbcjfXIhug6e1OGHbG0=
-github.com/yaegashi/jsonex.go v0.0.0-20191218175351-e6c64c300063/go.mod h1:ZAfwBTuzsN7uuDkFHl+CwueZ7WXziml8zKdWbWdsJko=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=
