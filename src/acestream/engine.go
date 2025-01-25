@@ -2,7 +2,6 @@ package acestream
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/goccy/go-json"
 
 	"m3u_gen_acestream/util/logger"
 )
