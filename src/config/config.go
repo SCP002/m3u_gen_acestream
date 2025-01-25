@@ -192,10 +192,20 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			),
 		},
 		"$.playlists[0].languagesFilter": []*yaml.Comment{
-			yaml.HeadComment("", " Only keep channels which language equals to any of these."),
+			yaml.HeadComment(
+				"",
+				" Only keep channels which language equals to any of these.",
+				" Languages are 3-character, lower case strings, such as 'eng', 'rus' etc.",
+				" Use empty string to include results with unset language.",
+			),
 		},
 		"$.playlists[0].countriesFilter": []*yaml.Comment{
-			yaml.HeadComment("", " Only keep channels which country equals to any of these."),
+			yaml.HeadComment(
+				"",
+				" Only keep channels which country equals to any of these.",
+				" Countries are 2-character, lower case strings, such as 'us', 'ru' etc. and 'int' for international.",
+				" Use empty string to include results with unset country.",
+			),
 		},
 		"$.playlists[0].statusFilter": []*yaml.Comment{
 			yaml.HeadComment(
