@@ -10,6 +10,7 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/goccy/go-json"
+	"github.com/samber/lo"
 
 	"m3u_gen_acestream/util/logger"
 )
@@ -19,6 +20,7 @@ type Engine struct {
 	log        *logger.Logger
 	httpClient *http.Client
 	addr       string
+	pageSize   int
 }
 
 // SearchResult represents available channels response to search request to engine.
@@ -86,7 +88,7 @@ type searchResp struct {
 
 // NewEngine returns new engine handler with it's address at `addr`, which should be in format of 'host:port'.
 func NewEngine(log *logger.Logger, httpClient *http.Client, addr string) *Engine {
-	return &Engine{log: log, httpClient: httpClient, addr: addr}
+	return &Engine{log: log, httpClient: httpClient, addr: addr, pageSize: 200}
 }
 
 // WaitForConnection blocks current goroutine until engine responds with version info or until `ctx` deadline exceedes.
@@ -147,6 +149,7 @@ func (e Engine) WaitForConnection(ctx context.Context) {
 
 // SearchAll returns all currently available acestream channels.
 func (e Engine) SearchAll(ctx context.Context) ([]SearchResult, error) {
+	e.log.Info("Searching for channels")
 	results := []SearchResult{}
 	for page := 0; ; page++ {
 		currResults, err := e.searchAtPage(ctx, page)
@@ -154,7 +157,7 @@ func (e Engine) SearchAll(ctx context.Context) ([]SearchResult, error) {
 			return results, errors.Wrapf(err, "Search at page %v", page)
 		}
 		results = append(results, currResults...)
-		if len(currResults) == 0 {
+		if len(currResults) < e.pageSize {
 			return results, nil
 		}
 	}
@@ -162,8 +165,8 @@ func (e Engine) SearchAll(ctx context.Context) ([]SearchResult, error) {
 
 // searchAtPage returns acestream channels at page `page` with maximum page size.
 func (e Engine) searchAtPage(ctx context.Context, page int) ([]SearchResult, error) {
-	e.log.Infof("Searching channels at page %v", page)
-	url := url.URL{Scheme: "http", Host: e.addr, Path: "search", RawQuery: fmt.Sprintf("page_size=200&page=%v", page)}
+	query := fmt.Sprintf("page_size=%v&page=%v", e.pageSize, page)
+	url := url.URL{Scheme: "http", Host: e.addr, Path: "search", RawQuery: query}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 	if err != nil {
 		return []SearchResult{}, errors.Wrap(err, "Create search request")
@@ -182,5 +185,9 @@ func (e Engine) searchAtPage(ctx context.Context, page int) ([]SearchResult, err
 	if err != nil {
 		return []SearchResult{}, errors.Wrap(err, "Decode search response body as JSON")
 	}
+	sources := lo.SumBy(out.Result.Results, func(sr SearchResult) int {
+		return len(sr.Items)
+	})
+	e.log.Infof("Received %v channels with %v sources at page %v", len(out.Result.Results), sources, page)
 	return out.Result.Results, nil
 }
