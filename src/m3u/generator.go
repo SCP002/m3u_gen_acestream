@@ -16,11 +16,12 @@ import (
 
 // Entry represents M3U file entry to execute template on.
 type Entry struct {
-	Categories string
 	Name       string
-	EngineAddr string
 	Infohash   string
-	// TODO: TVGName: Replace " " with "_" in Name? (Add tvg-name="{{.TVGName}}" to entry template)
+	Categories string
+	EngineAddr string
+	TVGName string
+	IconURL string
 }
 
 // Generate writes M3U file based on filtered `searchResults` using settings in config `cfg`.
@@ -28,22 +29,34 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 	log.Info("Generating M3U files")
 
 	for _, playlist := range cfg.Playlists {
-		// Filter []SearchResult
 		log.Infof("Filtering results for playlist %v", playlist.OutputPath)
-		searchResults = lo.Filter(searchResults, func(sr acestream.SearchResult, _ int) bool {
-			var keep bool
-			keep = playlist.NameRegexpFilter.MatchString(sr.Name)
-			return keep
-		})
+
+		// // Filter by status
+		// searchResults = lo.FilterMap(searchResults, func(sr acestream.SearchResult, _ int) (acestream.SearchResult, bool) {
+		// 	sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
+		// 		return lo.Contains(playlist.StatusFilter, item.Status)
+		// 	})
+		// 	return sr, true
+		// })
+
+		// // Filter by name
+		// searchResults = lo.Filter(searchResults, func(sr acestream.SearchResult, _ int) bool {
+		// 	return playlist.NameRegexpFilter.MatchString(sr.Name)
+		// })
 
 		// Transform []SearchResult to []Entry.
 		entries := lo.FlatMap(searchResults, func(searchResult acestream.SearchResult, _ int) []Entry {
 			return lo.Map(searchResult.Items, func(item acestream.Item, _ int) Entry {
+				iconURLs := lo.Map(searchResult.Icons, func(icon acestream.Icon, _ int) string {
+					return icon.URL
+				})
 				return Entry{
-					Categories: strings.Join(item.Categories, ";"),
 					Name:       item.Name,
-					EngineAddr: cfg.EngineAddr,
 					Infohash:   item.Infohash,
+					Categories: strings.Join(item.Categories, ";"),
+					EngineAddr: cfg.EngineAddr,
+					TVGName:    strings.ReplaceAll(item.Name, " ", "_"),
+					IconURL:    lo.FirstOr(iconURLs, ""),
 				}
 			})
 		})

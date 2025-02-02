@@ -198,7 +198,17 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			yaml.HeadComment("", " Template for the header of M3U file."),
 		},
 		"$.playlists[0].entryTemplate": []*yaml.Comment{
-			yaml.HeadComment("", " Template for each channel."),
+			yaml.HeadComment(
+				"",
+				" Template for each channel.",
+				" Available variables are:",
+				" {{.Name}}",
+				" {{.Infohash}}",
+				" {{.Categories}}",
+				" {{.EngineAddr}}",
+				" {{.TVGName}}",
+				" {{.IconURL}}",
+			),
 		},
 		"$.playlists[0].nameRegexpFilter": []*yaml.Comment{
 			yaml.HeadComment("", " Only keep channels which name matches this regular expression."),
