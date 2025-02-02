@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/adampresley/sigint"
+	"github.com/cockroachdb/errors"
 	goFlags "github.com/jessevdk/go-flags"
 
 	"m3u_gen_acestream/acestream"
@@ -50,7 +51,7 @@ func main() {
 
 	cfg, isNewCfg, err := config.Init(log, flags.CfgPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(errors.Wrap(err, "Initialize config"))
 	}
 	if isNewCfg {
 		log.Infof("New config is written to %v, please verify it and start this program again", flags.CfgPath)
@@ -63,10 +64,10 @@ func main() {
 
 	results, err := engine.SearchAll(context.Background())
 	if err != nil {
-		log.Error(err)
+		log.Error(errors.Wrap(err, "Search for available acestream channels"))
 	}
 
 	if err := m3u.Write(log, results, cfg); err != nil {
-		log.Error(err)
+		log.Error(errors.Wrap(err, "Write M3U file"))
 	}
 }

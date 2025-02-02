@@ -28,7 +28,7 @@ func Write(log *logger.Logger, searchResults []acestream.SearchResult, cfg *conf
 	log.Info("Filtering channels")
 	// TODO: Filtering
 
-	// Transform []SearchResult to []Entry
+	// Transform []SearchResult to []Entry.
 	entries := lo.FlatMap(searchResults, func(searchResult acestream.SearchResult, _ int) []Entry {
 		return lo.Map(searchResult.Items, func(item acestream.Item, _ int) Entry {
 			return Entry{
@@ -46,19 +46,19 @@ func Write(log *logger.Logger, searchResults []acestream.SearchResult, cfg *conf
 		log.Infof("Writing playlist %v", playlist.OutputPath)
 
 		if err := os.MkdirAll(filepath.Dir(playlist.OutputPath), os.ModePerm); err != nil {
-			return errors.Wrap(err, "Write M3U file")
+			return errors.Wrapf(err, "Make directory structure for playlist %v", playlist.OutputPath)
 		}
 
 		buff.WriteString(string(playlist.HeaderTemplate))
 
 		for _, entry := range entries {
 			if err := playlist.EntryTemplate.Execute(&buff, entry); err != nil {
-				return errors.Wrap(err, "Write M3U file")
+				return errors.Wrapf(err, "Execute template for entry %+v", entry)
 			}
 		}
 
 		if err := os.WriteFile(playlist.OutputPath, buff.Bytes(), 0644); err != nil {
-			return errors.Wrap(err, "Write M3U file")
+			return errors.Wrapf(err, "Write playlist %v", playlist.OutputPath)
 		}
 	}
 

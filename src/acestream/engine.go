@@ -107,36 +107,36 @@ func (e Engine) WaitForConnection(ctx context.Context) {
 		url := url.URL{Scheme: "http", Host: e.addr, Path: "webui/api/service", RawQuery: "method=get_version"}
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 		if err != nil {
-			e.log.Error(errors.Wrap(err, "Connect to engine"))
+			e.log.Error(errors.Wrap(err, "Connect to engine: Create get_version request"))
 			e.log.Debug("Sleeping before reconnect")
 			continue
 		}
 		resp, err := e.httpClient.Do(req)
 		if errors.Is(err, context.DeadlineExceeded) {
-			e.log.Error(errors.Wrap(err, "Connect to engine"))
+			e.log.Error(errors.Wrap(err, "Connect to engine: Send get_version request"))
 			return
 		}
 		if err != nil {
-			e.log.Error(errors.Wrap(err, "Connect to engine"))
+			e.log.Error(errors.Wrap(err, "Connect to engine: Send get_version request"))
 			e.log.Debug("Sleeping before reconnect")
 			continue
 		}
 		body, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
-			e.log.Error(errors.Wrap(err, "Connect to engine"))
+			e.log.Error(errors.Wrap(err, "Connect to engine: Read get_version response body"))
 			e.log.Debug("Sleeping before reconnect")
 			continue
 		}
 		var version versionResp
 		err = json.Unmarshal(body, &version)
 		if err != nil {
-			e.log.Error(errors.Wrap(err, "Connect to engine"))
+			e.log.Error(errors.Wrap(err, "Connect to engine: Decode get_version response body as JSON"))
 			e.log.Debug("Sleeping before reconnect")
 			continue
 		}
 		if version.Result.Code == 0 || version.Error != nil {
-			e.log.Errorf("Engine response: %+v", version)
+			e.log.Errorf("Connect to engine: Bad engine response: %+v", version)
 			e.log.Debug("Sleeping before reconnect")
 			continue
 		}
@@ -151,7 +151,7 @@ func (e Engine) SearchAll(ctx context.Context) ([]SearchResult, error) {
 	for page := 0; ; page++ {
 		currResults, err := e.searchAtPage(ctx, page)
 		if err != nil {
-			return results, err
+			return results, errors.Wrapf(err, "Search at page %v", page)
 		}
 		results = append(results, currResults...)
 		if len(currResults) == 0 {
@@ -166,21 +166,21 @@ func (e Engine) searchAtPage(ctx context.Context, page int) ([]SearchResult, err
 	url := url.URL{Scheme: "http", Host: e.addr, Path: "search", RawQuery: fmt.Sprintf("page_size=200&page=%v", page)}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 	if err != nil {
-		return []SearchResult{}, errors.Wrap(err, fmt.Sprintf("Search at page %v", page))
+		return []SearchResult{}, errors.Wrap(err, "Create search request")
 	}
 	resp, err := e.httpClient.Do(req)
 	if err != nil {
-		return []SearchResult{}, errors.Wrap(err, fmt.Sprintf("Search at page %v", page))
+		return []SearchResult{}, errors.Wrap(err, "Send search request")
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return []SearchResult{}, errors.Wrap(err, fmt.Sprintf("Search at page %v", page))
+		return []SearchResult{}, errors.Wrap(err, "Read search response body")
 	}
 	var out searchResp
 	err = json.Unmarshal(body, &out)
 	if err != nil {
-		return []SearchResult{}, errors.Wrap(err, fmt.Sprintf("Search at page %v", page))
+		return []SearchResult{}, errors.Wrap(err, "Decode search response body as JSON")
 	}
 	return out.Result.Results, nil
 }

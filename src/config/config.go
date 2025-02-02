@@ -64,7 +64,7 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 			return strings.Join(lines, "\n")
 		}
 
-		return yaml.UnmarshalWithOptions(bytes, &cfg,
+		err = yaml.UnmarshalWithOptions(bytes, &cfg,
 			yaml.CustomUnmarshaler(func(t *regexp.Regexp, b []byte) error {
 				rx, err := regexp.Compile(string(b))
 				*t = *rx
@@ -80,6 +80,8 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 				return err
 			}),
 		)
+
+		return errors.Wrap(err, "Decode config file")
 	}
 
 	writeDefConfig := func() error {
@@ -104,7 +106,7 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 			}),
 		)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "Encode config file")
 		}
 		return os.WriteFile(filePath, bytes, 0644)
 	}
