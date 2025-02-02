@@ -21,10 +21,13 @@ type Config struct {
 	Playlists  []Playlist `yaml:"playlists"`
 }
 
+// BlockStr represents YAML block string.
+type BlockStr string
+
 // Playlist represents set of parameters for M3U playlist generation such as output path, template and filter criterias.
 type Playlist struct {
 	OutputPath                   string            `yaml:"outputPath"`
-	HeaderTemplate               string            `yaml:"headerTemplate"`
+	HeaderTemplate               BlockStr          `yaml:"headerTemplate"`
 	EntryTemplate                template.Template `yaml:"entryTemplate"`
 	NameRegexpFilter             regexp.Regexp     `yaml:"nameRegexpFilter"`
 	CategoriesFilter             []string          `yaml:"categoriesFilter"`
@@ -49,6 +52,18 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		if err != nil {
 			return err
 		}
+
+		blockBytesToString := func(b []byte) string {
+			lines := strings.Split(string(b), "\n")
+			if lines[0] == ">" || lines[0] == "|" {
+				lines = lines[1:]
+			}
+			lines = lo.Map(lines, func(line string, _ int) string {
+				return strings.TrimPrefix(line, "    ")
+			})
+			return strings.Join(lines, "\n")
+		}
+
 		return yaml.UnmarshalWithOptions(bytes, &cfg,
 			yaml.CustomUnmarshaler(func(t *regexp.Regexp, b []byte) error {
 				rx, err := regexp.Compile(string(b))
@@ -56,33 +71,36 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 				return err
 			}),
 			yaml.CustomUnmarshaler(func(t *template.Template, b []byte) error {
-				lines := strings.Split(string(b), "\n")
-				if lines[0] == ">" || lines[0] == "|" {
-					lines = lines[1:]
-				}
-				lines = lo.Map(lines, func(line string, _ int) string {
-					return strings.TrimPrefix(line, "    ")
-				})
-				chunk := strings.Join(lines, "\n")
-				templ, err := t.Parse(chunk)
+				templ, err := t.Parse(blockBytesToString(b))
 				*t = *templ
+				return err
+			}),
+			yaml.CustomUnmarshaler(func(t *BlockStr, b []byte) error {
+				*t = BlockStr(blockBytesToString(b))
 				return err
 			}),
 		)
 	}
 
 	writeDefConfig := func() error {
+		stringToBlockBytes := func(s string) []byte {
+			lines := strings.Split(s, "\n")
+			lines = lo.Map(lines, func(line string, _ int) string {
+				return "  " + line
+			})
+			chunk := strings.Join(lines, "\n")
+			return []byte("|\n" + chunk)
+		}
+
 		bytes, err := yaml.MarshalWithOptions(defCfg, yaml.WithComment(defCommentMap),
 			yaml.CustomMarshaler(func(t regexp.Regexp) ([]byte, error) {
 				return []byte(t.String()), nil
 			}),
 			yaml.CustomMarshaler(func(t template.Template) ([]byte, error) {
-				lines := strings.Split(t.Root.String(), "\n")
-				lines = lo.Map(lines, func(line string, _ int) string {
-					return "  " + line
-				})
-				chunk := strings.Join(lines, "\n")
-				return []byte(">\n" + chunk), nil
+				return stringToBlockBytes(t.Root.String()), nil
+			}),
+			yaml.CustomMarshaler(func(t BlockStr) ([]byte, error) {
+				return stringToBlockBytes(string(t)), nil
 			}),
 		)
 		if err != nil {
@@ -109,7 +127,7 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 
 // newDefCfg returns new default config and comment map
 func newDefCfg() (*Config, yaml.CommentMap) {
-	headerLine := "#EXTM3U url-tvg=\"https://iptvx.one/epg/epg.xml.gz\" tvg-shift=0 deinterlace=1 m3uautoload=1\n"
+	headerLine := BlockStr(`#EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1`)
 	entryLine1 := `#EXTINF:-1 group-title="{{.Categories}}",{{.Name}}`
 	entryMpegtsLink := `http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}`
 	entryHlsLink := `http://{{.EngineAddr}}/ace/manifest.m3u8?infohash={{.Infohash}}`
@@ -175,7 +193,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			yaml.HeadComment("", " Destination filepath to write playlist to."),
 		},
 		"$.playlists[0].headerTemplate": []*yaml.Comment{
-			yaml.HeadComment("", " Template for the first line of M3U file."),
+			yaml.HeadComment("", " Template for the header of M3U file."),
 		},
 		"$.playlists[0].entryTemplate": []*yaml.Comment{
 			yaml.HeadComment("", " Template for each channel."),

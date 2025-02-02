@@ -91,6 +91,8 @@ func NewEngine(log *logger.Logger, httpClient *http.Client, addr string) *Engine
 
 // WaitForConnection blocks current goroutine until engine responds with version info or until `ctx` deadline exceedes.
 func (e Engine) WaitForConnection(ctx context.Context) {
+	e.log.Info("Connecting to engine")
+
 	ticker := time.NewTicker(time.Second * 5)
 	defer ticker.Stop()
 
@@ -138,7 +140,7 @@ func (e Engine) WaitForConnection(ctx context.Context) {
 			e.log.Debug("Sleeping before reconnect")
 			continue
 		}
-		e.log.Debug("Engine is running")
+		e.log.Info("Engine is running")
 		return
 	}
 }
@@ -160,7 +162,7 @@ func (e Engine) SearchAll(ctx context.Context) ([]SearchResult, error) {
 
 // searchAtPage returns acestream channels at page `page` with maximum page size.
 func (e Engine) searchAtPage(ctx context.Context, page int) ([]SearchResult, error) {
-	e.log.Debugf("Searching channels at page %v", page)
+	e.log.Infof("Searching channels at page %v", page)
 	url := url.URL{Scheme: "http", Host: e.addr, Path: "search", RawQuery: fmt.Sprintf("page_size=200&page=%v", page)}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 	if err != nil {

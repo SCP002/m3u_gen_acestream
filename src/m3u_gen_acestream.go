@@ -66,7 +66,7 @@ func main() {
 		log.Error(err)
 	}
 
-	if err := m3u.Write(results, cfg); err != nil {
+	if err := m3u.Write(log, results, cfg); err != nil {
 		log.Error(err)
 	}
 }
