@@ -67,7 +67,7 @@ func main() {
 		log.Error(errors.Wrap(err, "Search for available acestream channels"))
 	}
 
-	if err := m3u.Write(log, results, cfg); err != nil {
-		log.Error(errors.Wrap(err, "Write M3U file"))
+	if err := m3u.Generate(log, results, cfg); err != nil {
+		log.Error(errors.Wrap(err, "Generate M3U file"))
 	}
 }
