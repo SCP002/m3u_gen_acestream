@@ -23,22 +23,9 @@ type Engine struct {
 
 // SearchResult represents available channels response to search request to engine.
 type SearchResult struct {
-	Items []struct {
-		Status                int      `json:"status"`
-		Languages             []string `json:"languages"`
-		Name                  string   `json:"name"`
-		Countries             []string `json:"countries"`
-		Infohash              string   `json:"infohash"`
-		ChannelID             int      `json:"channel_id"`
-		AvailabilityUpdatedAt int      `json:"availability_updated_at"`
-		Availability          float64  `json:"availability"`
-		Categories            []string `json:"categories"`
-	} `json:"items"`
+	Items []Item `json:"items"`
 	Name  string `json:"name"`
-	Icons []struct {
-		URL  string `json:"url"`
-		Type int    `json:"type"`
-	} `json:"icons"`
+	Icons []Icon `json:"icons"`
 }
 
 // UnmarshalJSON implements json.Unmarshaller interface and made to deal with problematic Name field which can be both
@@ -57,6 +44,25 @@ func (sr *SearchResult) UnmarshalJSON(bytes []byte) error {
 	sr.Name = fmt.Sprintf("%v", tmp.Name)
 
 	return nil
+}
+
+// Item represents item in SearchResult.
+type Item struct {
+	Status                int      `json:"status"`
+	Languages             []string `json:"languages"`
+	Name                  string   `json:"name"`
+	Countries             []string `json:"countries"`
+	Infohash              string   `json:"infohash"`
+	ChannelID             int      `json:"channel_id"`
+	AvailabilityUpdatedAt int      `json:"availability_updated_at"`
+	Availability          float64  `json:"availability"`
+	Categories            []string `json:"categories"`
+}
+
+// Icon represents icon in SearchResult.
+type Icon struct {
+	URL  string `json:"url"`
+	Type int    `json:"type"`
 }
 
 // versionResp represents response to version request to engine.

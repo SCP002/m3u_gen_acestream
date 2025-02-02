@@ -24,7 +24,7 @@ type Config struct {
 // Playlist represents set of parameters for M3U playlist generation such as output path, template and filter criterias.
 type Playlist struct {
 	OutputPath                   string            `yaml:"outputPath"`
-	HeaderTemplate               template.Template `yaml:"headerTemplate"`
+	HeaderTemplate               string            `yaml:"headerTemplate"`
 	EntryTemplate                template.Template `yaml:"entryTemplate"`
 	NameRegexpFilter             regexp.Regexp     `yaml:"nameRegexpFilter"`
 	CategoriesFilter             []string          `yaml:"categoriesFilter"`
@@ -61,7 +61,7 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 					lines = lines[1:]
 				}
 				lines = lo.Map(lines, func(line string, _ int) string {
-					return strings.TrimPrefix(line, "  ")
+					return strings.TrimPrefix(line, "    ")
 				})
 				chunk := strings.Join(lines, "\n")
 				templ, err := t.Parse(chunk)
@@ -109,13 +109,12 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 
 // newDefCfg returns new default config and comment map
 func newDefCfg() (*Config, yaml.CommentMap) {
-	headerLine := `#EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1`
-	entryLine1 := `#EXTINF:-1 group-title="{{.Categories}}" tvg-name="{{.TVGName}}" tvg-logo="{{.TVGLogo}}",{{.Name}}`
+	headerLine := "#EXTM3U url-tvg=\"https://iptvx.one/epg/epg.xml.gz\" tvg-shift=0 deinterlace=1 m3uautoload=1\n"
+	entryLine1 := `#EXTINF:-1 group-title="{{.Categories}}",{{.Name}}`
 	entryMpegtsLink := `http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}`
 	entryHlsLink := `http://{{.EngineAddr}}/ace/manifest.m3u8?infohash={{.Infohash}}`
 	entryHttpAceProxyLink := `http://127.0.0.1:8000/pid/{{.Infohash}}/stream.mp4`
 
-	headerTemplate := template.Must(template.New("headerTemplate").Parse(headerLine))
 	mpegTsTemplate := template.Must(template.New("mpegTsTemplate").Parse(entryLine1 + "\n" + entryMpegtsLink))
 	hlsTemplate := template.Must(template.New("hlsTemplate").Parse(entryLine1 + "\n" + entryHlsLink))
 	httpAceProxyTemplate := template.Must(template.New("httpAceProxy").Parse(entryLine1 + "\n" + entryHttpAceProxyLink))
@@ -125,7 +124,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 		Playlists: []Playlist{
 			{
 				OutputPath:                   "./out/playlist_all_mpegts.m3u8",
-				HeaderTemplate:               *headerTemplate,
+				HeaderTemplate:               headerLine,
 				EntryTemplate:                *mpegTsTemplate,
 				NameRegexpFilter:             *regexp.MustCompile(".*"),
 				CategoriesFilter:             []string{},
@@ -137,7 +136,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			},
 			{
 				OutputPath:                   "./out/playlist_tv_and_music_hls.m3u8",
-				HeaderTemplate:               *headerTemplate,
+				HeaderTemplate:               headerLine,
 				EntryTemplate:                *hlsTemplate,
 				NameRegexpFilter:             *regexp.MustCompile(".*"),
 				CategoriesFilter:             []string{"tv", "music"},
@@ -149,7 +148,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			},
 			{
 				OutputPath:                   "./out/playlist_fm_httpaceproxy.m3u8",
-				HeaderTemplate:               *headerTemplate,
+				HeaderTemplate:               headerLine,
 				EntryTemplate:                *httpAceProxyTemplate,
 				NameRegexpFilter:             *regexp.MustCompile(".* FM$"),
 				CategoriesFilter:             []string{},

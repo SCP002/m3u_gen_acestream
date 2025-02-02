@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -13,6 +12,7 @@ import (
 	"m3u_gen_acestream/acestream"
 	"m3u_gen_acestream/cli"
 	"m3u_gen_acestream/config"
+	"m3u_gen_acestream/m3u"
 	"m3u_gen_acestream/util/logger"
 )
 
@@ -65,6 +65,8 @@ func main() {
 	if err != nil {
 		log.Error(err)
 	}
-	prettyResults, _ := json.MarshalIndent(results, "", "  ")
-	log.Info(string(prettyResults))
+
+	if err := m3u.Write(results, cfg); err != nil {
+		log.Error(err)
+	}
 }
