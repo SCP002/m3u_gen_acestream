@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/samber/lo"
@@ -20,8 +21,8 @@ type Entry struct {
 	Infohash   string
 	Categories string
 	EngineAddr string
-	TVGName string
-	IconURL string
+	TVGName    string
+	IconURL    string
 }
 
 // Generate writes M3U file based on filtered `searchResults` using settings in config `cfg`.
@@ -29,27 +30,57 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 	log.Info("Generating M3U files")
 
 	for _, playlist := range cfg.Playlists {
-		log.Infof("Filtering results for playlist %v", playlist.OutputPath)
+		log.Infof("Filtering channels for playlist %v", playlist.OutputPath)
 
-		// // Filter by status
-		// searchResults = lo.FilterMap(searchResults, func(sr acestream.SearchResult, _ int) (acestream.SearchResult, bool) {
-		// 	sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-		// 		return lo.Contains(playlist.StatusFilter, item.Status)
-		// 	})
-		// 	return sr, true
-		// })
+		// Filter by status
+		prevSources := acestream.GetSourcesAmount(searchResults)
+		searchResults = lo.Map(searchResults, func(searchResult acestream.SearchResult, _ int) acestream.SearchResult {
+			searchResult.Items = lo.Filter(searchResult.Items, func(item acestream.Item, _ int) bool {
+				return lo.Contains(playlist.StatusFilter, item.Status)
+			})
+			return searchResult
+		})
+		currSources := acestream.GetSourcesAmount(searchResults)
+		log.Infof("Rejected %v sources by status for playlist %v", prevSources-currSources, playlist.OutputPath)
 
-		// // Filter by name
-		// searchResults = lo.Filter(searchResults, func(sr acestream.SearchResult, _ int) bool {
-		// 	return playlist.NameRegexpFilter.MatchString(sr.Name)
-		// })
+		// Filter by availability
+		prevSources = currSources
+		searchResults = lo.Map(searchResults, func(searchResult acestream.SearchResult, _ int) acestream.SearchResult {
+			searchResult.Items = lo.Filter(searchResult.Items, func(item acestream.Item, _ int) bool {
+				return item.Availability < playlist.AvailabilityThreshold
+			})
+			return searchResult
+		})
+		currSources = acestream.GetSourcesAmount(searchResults)
+		log.Infof("Rejected %v sources by availability for playlist %v", prevSources-currSources, playlist.OutputPath)
+
+		// Filter by availability update time
+		prevSources = currSources
+		searchResults = lo.Map(searchResults, func(searchResult acestream.SearchResult, _ int) acestream.SearchResult {
+			searchResult.Items = lo.Filter(searchResult.Items, func(item acestream.Item, _ int) bool {
+				now := time.Now().Unix()
+				return (now - item.AvailabilityUpdatedAt) > int64(playlist.AvailabilityUpdatedThreshold.Seconds())
+			})
+			return searchResult
+		})
+		currSources = acestream.GetSourcesAmount(searchResults)
+		log.Infof("Rejected %v sources by availability update time for playlist %v",
+			prevSources-currSources, playlist.OutputPath)
+
+		// Filter by name
+		prevSources = currSources
+		searchResults = lo.Filter(searchResults, func(searchResult acestream.SearchResult, _ int) bool {
+			return playlist.NameRegexpFilter.MatchString(searchResult.Name)
+		})
+		currSources = acestream.GetSourcesAmount(searchResults)
+		log.Infof("Rejected %v sources by name for playlist %v", prevSources-currSources, playlist.OutputPath)
 
 		// Transform []SearchResult to []Entry.
 		entries := lo.FlatMap(searchResults, func(searchResult acestream.SearchResult, _ int) []Entry {
+			iconURLs := lo.Map(searchResult.Icons, func(icon acestream.Icon, _ int) string {
+				return icon.URL
+			})
 			return lo.Map(searchResult.Items, func(item acestream.Item, _ int) Entry {
-				iconURLs := lo.Map(searchResult.Icons, func(icon acestream.Icon, _ int) string {
-					return icon.URL
-				})
 				return Entry{
 					Name:       item.Name,
 					Infohash:   item.Infohash,

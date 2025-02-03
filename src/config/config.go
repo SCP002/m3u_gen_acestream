@@ -34,7 +34,7 @@ type Playlist struct {
 	LanguagesFilter              []string          `yaml:"languagesFilter"`
 	CountriesFilter              []string          `yaml:"countriesFilter"`
 	StatusFilter                 []int             `yaml:"statusFilter"`
-	AvailabilityThreshold        float32           `yaml:"availabilityThreshold"`
+	AvailabilityThreshold        float64           `yaml:"availabilityThreshold"`
 	AvailabilityUpdatedThreshold time.Duration     `yaml:"availabilityUpdatedThreshold"`
 }
 

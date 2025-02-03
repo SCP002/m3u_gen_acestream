@@ -56,7 +56,7 @@ type Item struct {
 	Countries             []string `json:"countries"`
 	Infohash              string   `json:"infohash"`
 	ChannelID             int      `json:"channel_id"`
-	AvailabilityUpdatedAt int      `json:"availability_updated_at"`
+	AvailabilityUpdatedAt int64    `json:"availability_updated_at"`
 	Availability          float64  `json:"availability"`
 	Categories            []string `json:"categories"`
 }
@@ -185,9 +185,14 @@ func (e Engine) searchAtPage(ctx context.Context, page int) ([]SearchResult, err
 	if err != nil {
 		return []SearchResult{}, errors.Wrap(err, "Decode search response body as JSON")
 	}
-	sources := lo.SumBy(out.Result.Results, func(sr SearchResult) int {
-		return len(sr.Items)
-	})
-	e.log.Infof("Received %v channels with %v sources at page %v", len(out.Result.Results), sources, page)
+	e.log.Infof("Received %v channels with %v sources at page %v",
+		len(out.Result.Results), GetSourcesAmount(out.Result.Results), page)
 	return out.Result.Results, nil
+}
+
+// GetSourcesAmount returns total amount of Item's in `searchResults`.
+func GetSourcesAmount(searchResults []SearchResult) int {
+	return lo.SumBy(searchResults, func(searchResult SearchResult) int {
+		return len(searchResult.Items)
+	})
 }
