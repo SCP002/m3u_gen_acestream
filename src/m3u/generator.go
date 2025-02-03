@@ -47,7 +47,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 		prevSources = currSources
 		searchResults = lo.Map(searchResults, func(searchResult acestream.SearchResult, _ int) acestream.SearchResult {
 			searchResult.Items = lo.Filter(searchResult.Items, func(item acestream.Item, _ int) bool {
-				return item.Availability < playlist.AvailabilityThreshold
+				return item.Availability >= playlist.AvailabilityThreshold
 			})
 			return searchResult
 		})
@@ -59,7 +59,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 		searchResults = lo.Map(searchResults, func(searchResult acestream.SearchResult, _ int) acestream.SearchResult {
 			searchResult.Items = lo.Filter(searchResult.Items, func(item acestream.Item, _ int) bool {
 				now := time.Now().Unix()
-				return (now - item.AvailabilityUpdatedAt) > int64(playlist.AvailabilityUpdatedThreshold.Seconds())
+				return (now - item.AvailabilityUpdatedAt) <= int64(playlist.AvailabilityUpdatedThreshold.Seconds())
 			})
 			return searchResult
 		})
