@@ -185,8 +185,8 @@ func (e Engine) searchAtPage(ctx context.Context, page int) ([]SearchResult, err
 	if err != nil {
 		return []SearchResult{}, errors.Wrap(err, "Decode search response body as JSON")
 	}
-	e.log.Infof("Received %v channels with %v sources at page %v",
-		len(out.Result.Results), GetSourcesAmount(out.Result.Results), page)
+	e.log.InfoFi("Received", "channels", len(out.Result.Results), "sources", GetSourcesAmount(out.Result.Results),
+		"page", page)
 	return out.Result.Results, nil
 }
 

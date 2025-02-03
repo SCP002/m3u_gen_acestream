@@ -30,7 +30,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 	log.Info("Generating M3U files")
 
 	for _, playlist := range cfg.Playlists {
-		log.Infof("Filtering channels for playlist %v", playlist.OutputPath)
+		log.Info("Filtering channels")
 
 		// Filter by status
 		prevSources := acestream.GetSourcesAmount(searchResults)
@@ -41,7 +41,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 			return searchResult
 		})
 		currSources := acestream.GetSourcesAmount(searchResults)
-		log.Infof("Rejected %v sources by status for playlist %v", prevSources-currSources, playlist.OutputPath)
+		log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "status", "playlist", playlist.OutputPath)
 
 		// Filter by availability
 		prevSources = currSources
@@ -52,20 +52,21 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 			return searchResult
 		})
 		currSources = acestream.GetSourcesAmount(searchResults)
-		log.Infof("Rejected %v sources by availability for playlist %v", prevSources-currSources, playlist.OutputPath)
+		log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "availability",
+			"playlist", playlist.OutputPath)
 
 		// Filter by availability update time
 		prevSources = currSources
 		searchResults = lo.Map(searchResults, func(searchResult acestream.SearchResult, _ int) acestream.SearchResult {
 			searchResult.Items = lo.Filter(searchResult.Items, func(item acestream.Item, _ int) bool {
-				now := time.Now().Unix()
-				return (now - item.AvailabilityUpdatedAt) <= int64(playlist.AvailabilityUpdatedThreshold.Seconds())
+				availabilityUpdatedAgo := time.Now().Unix() - item.AvailabilityUpdatedAt
+				return availabilityUpdatedAgo <= int64(playlist.AvailabilityUpdatedThreshold.Seconds())
 			})
 			return searchResult
 		})
 		currSources = acestream.GetSourcesAmount(searchResults)
-		log.Infof("Rejected %v sources by availability update time for playlist %v",
-			prevSources-currSources, playlist.OutputPath)
+		log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "availability update time",
+			"playlist", playlist.OutputPath)
 
 		// Filter by name
 		prevSources = currSources
@@ -73,7 +74,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 			return playlist.NameRegexpFilter.MatchString(searchResult.Name)
 		})
 		currSources = acestream.GetSourcesAmount(searchResults)
-		log.Infof("Rejected %v sources by name for playlist %v", prevSources-currSources, playlist.OutputPath)
+		log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "name", "playlist", playlist.OutputPath)
 
 		// Transform []SearchResult to []Entry.
 		entries := lo.FlatMap(searchResults, func(searchResult acestream.SearchResult, _ int) []Entry {
@@ -93,7 +94,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 		})
 
 		// Write playlists
-		log.Infof("Writing playlist %v", playlist.OutputPath)
+		log.InfoFi("Writing output", "playlist", playlist.OutputPath)
 		if err := os.MkdirAll(filepath.Dir(playlist.OutputPath), os.ModePerm); err != nil {
 			return errors.Wrapf(err, "Make directory structure for playlist %v", playlist.OutputPath)
 		}
