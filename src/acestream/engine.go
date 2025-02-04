@@ -192,7 +192,7 @@ func (e Engine) searchAtPage(ctx context.Context, page int) ([]SearchResult, err
 
 // GetSourcesAmount returns total amount of Item's in `searchResults`.
 func GetSourcesAmount(searchResults []SearchResult) int {
-	return lo.SumBy(searchResults, func(searchResult SearchResult) int {
-		return len(searchResult.Items)
+	return lo.SumBy(searchResults, func(sr SearchResult) int {
+		return len(sr.Items)
 	})
 }
