@@ -69,21 +69,26 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 			"playlist", playlist.OutputPath)
 
 		// Filter by categories
-		if len(playlist.CategoriesFilter) > 0 || len(playlist.CategoriesBlacklist) > 0 {
-			prevSources = currSources
+		prevSources = currSources
+		if len(playlist.CategoriesFilter) > 0 {
 			searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
 				sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
 					return lo.Some(item.Categories, playlist.CategoriesFilter)
 				})
 				return sr
 			})
+		}
+		if len(playlist.CategoriesBlacklist) > 0 {
+			prevSources = currSources
 			searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
 				sr.Items = lo.Reject(sr.Items, func(item acestream.Item, _ int) bool {
 					return lo.Some(item.Categories, playlist.CategoriesBlacklist)
 				})
 				return sr
 			})
-			currSources = acestream.GetSourcesAmount(searchResults)
+		}
+		currSources = acestream.GetSourcesAmount(searchResults)
+		if len(playlist.CategoriesFilter) > 0 || len(playlist.CategoriesBlacklist) > 0 {
 			log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "categories",
 				"playlist", playlist.OutputPath)
 		}
