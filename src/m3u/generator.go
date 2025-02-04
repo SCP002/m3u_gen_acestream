@@ -69,7 +69,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 			"playlist", playlist.OutputPath)
 
 		// Filter by categories
-		if len(playlist.CategoriesFilter) > 0 {
+		if len(playlist.CategoriesFilter) > 0 || len(playlist.CategoriesBlacklist) > 0 {
 			prevSources = currSources
 			searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
 				sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
