@@ -77,6 +77,12 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 				})
 				return sr
 			})
+			searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
+				sr.Items = lo.Reject(sr.Items, func(item acestream.Item, _ int) bool {
+					return lo.Some(item.Categories, playlist.CategoriesBlacklist)
+				})
+				return sr
+			})
 			currSources = acestream.GetSourcesAmount(searchResults)
 			log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "categories",
 				"playlist", playlist.OutputPath)
@@ -114,7 +120,13 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 		prevSources = currSources
 		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
 			sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-				return playlist.NameRegexpFilter.MatchString(item.Name)
+				return playlist.NameRegexpFilter != nil && playlist.NameRegexpFilter.MatchString(item.Name)
+			})
+			return sr
+		})
+		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
+			sr.Items = lo.Reject(sr.Items, func(item acestream.Item, _ int) bool {
+				return playlist.NameRegexpBlacklist != nil && playlist.NameRegexpBlacklist.MatchString(item.Name)
 			})
 			return sr
 		})

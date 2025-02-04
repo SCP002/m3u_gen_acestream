@@ -26,16 +26,18 @@ type BlockStr string
 
 // Playlist represents set of parameters for M3U playlist generation such as output path, template and filter criterias.
 type Playlist struct {
-	OutputPath                   string            `yaml:"outputPath"`
-	HeaderTemplate               BlockStr          `yaml:"headerTemplate"`
-	EntryTemplate                template.Template `yaml:"entryTemplate"`
-	NameRegexpFilter             regexp.Regexp     `yaml:"nameRegexpFilter"`
-	CategoriesFilter             []string          `yaml:"categoriesFilter"`
-	LanguagesFilter              []string          `yaml:"languagesFilter"`
-	CountriesFilter              []string          `yaml:"countriesFilter"`
-	StatusFilter                 []int             `yaml:"statusFilter"`
-	AvailabilityThreshold        float64           `yaml:"availabilityThreshold"`
-	AvailabilityUpdatedThreshold time.Duration     `yaml:"availabilityUpdatedThreshold"`
+	OutputPath                   string             `yaml:"outputPath"`
+	HeaderTemplate               BlockStr           `yaml:"headerTemplate"`
+	EntryTemplate                *template.Template `yaml:"entryTemplate"`
+	NameRegexpFilter             *regexp.Regexp     `yaml:"nameRegexpFilter"`
+	NameRegexpBlacklist          *regexp.Regexp     `yaml:"nameRegexpBlacklist"`
+	CategoriesFilter             []string           `yaml:"categoriesFilter"`
+	CategoriesBlacklist          []string           `yaml:"categoriesBlacklist"`
+	LanguagesFilter              []string           `yaml:"languagesFilter"`
+	CountriesFilter              []string           `yaml:"countriesFilter"`
+	StatusFilter                 []int              `yaml:"statusFilter"`
+	AvailabilityThreshold        float64            `yaml:"availabilityThreshold"`
+	AvailabilityUpdatedThreshold time.Duration      `yaml:"availabilityUpdatedThreshold"`
 }
 
 // Init returns config instance and false if config at `filePath` already exist.
@@ -145,9 +147,11 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			{
 				OutputPath:                   "./out/playlist_all_mpegts.m3u8",
 				HeaderTemplate:               headerLine,
-				EntryTemplate:                *mpegTsTemplate,
-				NameRegexpFilter:             *regexp.MustCompile(".*"),
+				EntryTemplate:                mpegTsTemplate,
+				NameRegexpFilter:             regexp.MustCompile(".*"),
+				NameRegexpBlacklist:          nil,
 				CategoriesFilter:             []string{},
+				CategoriesBlacklist:          []string{},
 				LanguagesFilter:              []string{},
 				CountriesFilter:              []string{},
 				StatusFilter:                 []int{2},
@@ -157,9 +161,11 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			{
 				OutputPath:                   "./out/playlist_tv_and_music_hls.m3u8",
 				HeaderTemplate:               headerLine,
-				EntryTemplate:                *hlsTemplate,
-				NameRegexpFilter:             *regexp.MustCompile(".*"),
+				EntryTemplate:                hlsTemplate,
+				NameRegexpFilter:             regexp.MustCompile(".*"),
+				NameRegexpBlacklist:          nil,
 				CategoriesFilter:             []string{"tv", "music"},
+				CategoriesBlacklist:          []string{},
 				LanguagesFilter:              []string{},
 				CountriesFilter:              []string{},
 				StatusFilter:                 []int{2},
@@ -169,9 +175,11 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			{
 				OutputPath:                   "./out/playlist_fm_httpaceproxy.m3u8",
 				HeaderTemplate:               headerLine,
-				EntryTemplate:                *httpAceProxyTemplate,
-				NameRegexpFilter:             *regexp.MustCompile(".* FM$"),
+				EntryTemplate:                httpAceProxyTemplate,
+				NameRegexpFilter:             regexp.MustCompile(".* FM$"),
+				NameRegexpBlacklist:          nil,
 				CategoriesFilter:             []string{},
+				CategoriesBlacklist:          []string{},
 				LanguagesFilter:              []string{},
 				CountriesFilter:              []string{},
 				StatusFilter:                 []int{2},
@@ -213,10 +221,20 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 		"$.playlists[0].nameRegexpFilter": []*yaml.Comment{
 			yaml.HeadComment("", " Only keep channels which name matches this regular expression."),
 		},
+		"$.playlists[0].nameRegexpBlacklist": []*yaml.Comment{
+			yaml.HeadComment("", " Remove channels which name matches this regular expression."),
+		},
 		"$.playlists[0].categoriesFilter": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
 				" Only keep channels which category equals to any of these.",
+				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/ for categories list",
+			),
+		},
+		"$.playlists[0].categoriesBlacklist": []*yaml.Comment{
+			yaml.HeadComment(
+				"",
+				" Remove channels which category equals to any of these.",
 				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/ for categories list",
 			),
 		},
