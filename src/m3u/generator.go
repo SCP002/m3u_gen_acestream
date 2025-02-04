@@ -34,7 +34,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 
 		// Filter by status
 		prevSources := acestream.GetSourcesAmount(searchResults)
-		searchResults = lo.Map(searchResults, func(searchResult acestream.SearchResult, _ int) acestream.SearchResult {
+		searchResults := lo.Map(searchResults, func(searchResult acestream.SearchResult, _ int) acestream.SearchResult {
 			searchResult.Items = lo.Filter(searchResult.Items, func(item acestream.Item, _ int) bool {
 				return lo.Contains(playlist.StatusFilter, item.Status)
 			})
@@ -68,10 +68,46 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 		log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "availability update time",
 			"playlist", playlist.OutputPath)
 
+		// Filter by categories
+		prevSources = currSources
+		searchResults = lo.Map(searchResults, func(searchResult acestream.SearchResult, _ int) acestream.SearchResult {
+			searchResult.Items = lo.Filter(searchResult.Items, func(item acestream.Item, _ int) bool {
+				return lo.Some(item.Categories, playlist.CategoriesFilter)
+			})
+			return searchResult
+		})
+		currSources = acestream.GetSourcesAmount(searchResults)
+		log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "categories", "playlist", playlist.OutputPath)
+
+		// Filter by languages
+		prevSources = currSources
+		searchResults = lo.Map(searchResults, func(searchResult acestream.SearchResult, _ int) acestream.SearchResult {
+			searchResult.Items = lo.Filter(searchResult.Items, func(item acestream.Item, _ int) bool {
+				return lo.Some(item.Languages, playlist.LanguagesFilter)
+			})
+			return searchResult
+		})
+		currSources = acestream.GetSourcesAmount(searchResults)
+		log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "languages", "playlist", playlist.OutputPath)
+
+		// Filter by countries
+		prevSources = currSources
+		searchResults = lo.Map(searchResults, func(searchResult acestream.SearchResult, _ int) acestream.SearchResult {
+			searchResult.Items = lo.Filter(searchResult.Items, func(item acestream.Item, _ int) bool {
+				return lo.Some(item.Countries, playlist.CountriesFilter)
+			})
+			return searchResult
+		})
+		currSources = acestream.GetSourcesAmount(searchResults)
+		log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "countries", "playlist", playlist.OutputPath)
+
 		// Filter by name
 		prevSources = currSources
-		searchResults = lo.Filter(searchResults, func(searchResult acestream.SearchResult, _ int) bool {
-			return playlist.NameRegexpFilter.MatchString(searchResult.Name)
+		searchResults = lo.Map(searchResults, func(searchResult acestream.SearchResult, _ int) acestream.SearchResult {
+			searchResult.Items = lo.Filter(searchResult.Items, func(item acestream.Item, _ int) bool {
+				return playlist.NameRegexpFilter.MatchString(item.Name)
+			})
+			return searchResult
 		})
 		currSources = acestream.GetSourcesAmount(searchResults)
 		log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "name", "playlist", playlist.OutputPath)
