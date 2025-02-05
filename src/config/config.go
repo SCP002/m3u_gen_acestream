@@ -38,6 +38,7 @@ type Playlist struct {
 	StatusFilter                 []int              `yaml:"statusFilter"`
 	AvailabilityThreshold        float64            `yaml:"availabilityThreshold"`
 	AvailabilityUpdatedThreshold time.Duration      `yaml:"availabilityUpdatedThreshold"`
+	// TODO: Add category mapping
 }
 
 // Init returns config instance and false if config at `filePath` already exist.

@@ -100,7 +100,7 @@ func filterByStatus(log *logger.Logger,
 	return searchResults
 }
 
-// filterByAvailability returns filtered `searchResults` by availability threshold in `playlist`.
+// filterByAvailability returns filtered `searchResults` by availability in `playlist`.
 func filterByAvailability(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist) []acestream.SearchResult {
@@ -116,7 +116,7 @@ func filterByAvailability(log *logger.Logger,
 	return searchResults
 }
 
-// filterByAvailabilityUpdateTime returns filtered `searchResults` by availability update time threshold in `playlist`.
+// filterByAvailabilityUpdateTime returns filtered `searchResults` by availability update time in `playlist`.
 func filterByAvailabilityUpdateTime(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist) []acestream.SearchResult {
@@ -178,7 +178,7 @@ func filterByLanguages(log *logger.Logger,
 	return searchResults
 }
 
-// filterByLanguages returns filtered `searchResults` by countries list in `playlist`.
+// filterByCountries returns filtered `searchResults` by countries list in `playlist`.
 func filterByCountries(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist) []acestream.SearchResult {
@@ -196,7 +196,7 @@ func filterByCountries(log *logger.Logger,
 	return searchResults
 }
 
-// filterByLanguages returns filtered `searchResults` by name regexp in `playlist`.
+// filterByName returns filtered `searchResults` by name regular expressions in `playlist`.
 func filterByName(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist) []acestream.SearchResult {
@@ -205,6 +205,9 @@ func filterByName(log *logger.Logger,
 		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
 			sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
 				return lo.SomeBy(playlist.NameRegexpFilter, func(rx *regexp.Regexp) bool {
+					if rx == nil {
+						return true
+					}
 					return rx.MatchString(item.Name)
 				})
 			})
@@ -215,6 +218,9 @@ func filterByName(log *logger.Logger,
 		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
 			sr.Items = lo.Reject(sr.Items, func(item acestream.Item, _ int) bool {
 				return lo.SomeBy(playlist.NameRegexpBlacklist, func(rx *regexp.Regexp) bool {
+					if rx == nil {
+						return false
+					}
 					return rx.MatchString(item.Name)
 				})
 			})

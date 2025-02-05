@@ -50,12 +50,12 @@ type Logger struct {
 	*pLog.Logger
 }
 
-// New returns new configured logger with log level `lvl`.
-func New(lvl Level) *Logger {
+// New returns new configured logger with log level `lvl` that writes to `consoleWriter`.
+func New(lvl Level, consoleWriter io.Writer) *Logger {
 	writer := pLog.MultiEntryWriter{
 		&pLog.ConsoleWriter{
 			Formatter: newConsoleFormatter(true, time.DateTime),
-			Writer:    os.Stderr,
+			Writer:    consoleWriter,
 		},
 	}
 	log := pLog.Logger{

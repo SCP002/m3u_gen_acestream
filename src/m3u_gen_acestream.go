@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	log := logger.New(logger.FatalLevel)
+	log := logger.New(logger.FatalLevel, os.Stderr)
 
 	flags, err := cli.Parse()
 	if flags.Version {
