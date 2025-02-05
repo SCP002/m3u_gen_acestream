@@ -54,7 +54,7 @@ func main() {
 		log.Fatal(errors.Wrap(err, "Initialize config"))
 	}
 	if isNewCfg {
-		log.InfoFi("Config is written, please verify it and start this program again", "path", flags.CfgPath)
+		log.InfoFi("New config is written, please verify it and start this program again", "path", flags.CfgPath)
 		os.Exit(0)
 	}
 
