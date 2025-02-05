@@ -129,7 +129,7 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 	return &cfg, false, nil
 }
 
-// newDefCfg returns new default config and comment map
+// newDefCfg returns new default config and comment map.
 func newDefCfg() (*Config, yaml.CommentMap) {
 	headerLine := BlockStr(`#EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1`)
 	entryLine1 := `#EXTINF:-1 group-title="{{.Categories}}",{{.Name}}`
@@ -148,7 +148,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				OutputPath:                   "./out/playlist_all_mpegts.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                mpegTsTemplate,
-				NameRegexpFilter:             regexp.MustCompile(".*"),
+				NameRegexpFilter:             regexp.MustCompile(`.*`),
 				NameRegexpBlacklist:          nil,
 				CategoriesFilter:             []string{},
 				CategoriesBlacklist:          []string{},
@@ -162,7 +162,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				OutputPath:                   "./out/playlist_tv_and_music_hls.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                hlsTemplate,
-				NameRegexpFilter:             regexp.MustCompile(".*"),
+				NameRegexpFilter:             regexp.MustCompile(`.*`),
 				NameRegexpBlacklist:          nil,
 				CategoriesFilter:             []string{"tv", "music"},
 				CategoriesBlacklist:          []string{},
@@ -173,13 +173,13 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
 			},
 			{
-				OutputPath:                   "./out/playlist_fm_httpaceproxy.m3u8",
+				OutputPath:                   "./out/playlist_all_but_porn_httpaceproxy.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                httpAceProxyTemplate,
-				NameRegexpFilter:             regexp.MustCompile(".* FM$"),
-				NameRegexpBlacklist:          nil,
+				NameRegexpFilter:             regexp.MustCompile(`.*`),
+				NameRegexpBlacklist:          regexp.MustCompile(`(?i)(.*porn.*)|(.*18\+.*)`),
 				CategoriesFilter:             []string{},
-				CategoriesBlacklist:          []string{},
+				CategoriesBlacklist:          []string{"erotic_18_plus", "18+"},
 				LanguagesFilter:              []string{},
 				CountriesFilter:              []string{},
 				StatusFilter:                 []int{2},
@@ -229,6 +229,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				"",
 				" Only keep channels which category equals to any of these.",
 				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/ for categories list",
+				" for known categories list.",
 			),
 		},
 		"$.playlists[0].categoriesBlacklist": []*yaml.Comment{
@@ -236,6 +237,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				"",
 				" Remove channels which category equals to any of these.",
 				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/ for categories list",
+				" for known categories list.",
 			),
 		},
 		"$.playlists[0].languagesFilter": []*yaml.Comment{
@@ -277,7 +279,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 		"$.playlists[2]": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
-				" https://github.com/pepsik-kiev/HTTPAceProxy format, only keep channels which names ends with ' FM'.",
+				" https://github.com/pepsik-kiev/HTTPAceProxy format, all but erotic channels.",
 			),
 		},
 	}

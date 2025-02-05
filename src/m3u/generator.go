@@ -30,7 +30,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 	log.Info("Generating M3U files")
 
 	for _, playlist := range cfg.Playlists {
-		searchResults = filter(log, searchResults, playlist)
+		searchResults := filter(log, searchResults, playlist)
 
 		// Transform []SearchResult to []Entry.
 		entries := lo.FlatMap(searchResults, func(sr acestream.SearchResult, _ int) []Entry {
