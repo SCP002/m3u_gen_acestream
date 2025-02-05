@@ -29,8 +29,8 @@ type Playlist struct {
 	OutputPath                   string             `yaml:"outputPath"`
 	HeaderTemplate               BlockStr           `yaml:"headerTemplate"`
 	EntryTemplate                *template.Template `yaml:"entryTemplate"`
-	NameRegexpFilter             *regexp.Regexp     `yaml:"nameRegexpFilter"`
-	NameRegexpBlacklist          *regexp.Regexp     `yaml:"nameRegexpBlacklist"`
+	NameRegexpFilter             []*regexp.Regexp   `yaml:"nameRegexpFilter"`
+	NameRegexpBlacklist          []*regexp.Regexp   `yaml:"nameRegexpBlacklist"`
 	CategoriesFilter             []string           `yaml:"categoriesFilter"`
 	CategoriesBlacklist          []string           `yaml:"categoriesBlacklist"`
 	LanguagesFilter              []string           `yaml:"languagesFilter"`
@@ -141,6 +141,13 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 	hlsTemplate := template.Must(template.New("hlsTemplate").Parse(entryLine1 + "\n" + entryHlsLink))
 	httpAceProxyTemplate := template.Must(template.New("httpAceProxy").Parse(entryLine1 + "\n" + entryHttpAceProxyLink))
 
+	regexpsAll := []*regexp.Regexp{regexp.MustCompile(`.*`)}
+	regexpsPorn := []*regexp.Regexp{
+		regexp.MustCompile(`(?i).*erotic.*`),
+		regexp.MustCompile(`(?i).*porn.*`),
+		regexp.MustCompile(`(?i).*18\+.*`),
+	}
+
 	cfg := &Config{
 		EngineAddr: "127.0.0.1:6878",
 		Playlists: []Playlist{
@@ -148,8 +155,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				OutputPath:                   "./out/playlist_all_mpegts.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                mpegTsTemplate,
-				NameRegexpFilter:             regexp.MustCompile(`.*`),
-				NameRegexpBlacklist:          nil,
+				NameRegexpFilter:             regexpsAll,
+				NameRegexpBlacklist:          []*regexp.Regexp{},
 				CategoriesFilter:             []string{},
 				CategoriesBlacklist:          []string{},
 				LanguagesFilter:              []string{},
@@ -162,8 +169,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				OutputPath:                   "./out/playlist_tv_and_music_hls.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                hlsTemplate,
-				NameRegexpFilter:             regexp.MustCompile(`.*`),
-				NameRegexpBlacklist:          nil,
+				NameRegexpFilter:             regexpsAll,
+				NameRegexpBlacklist:          []*regexp.Regexp{},
 				CategoriesFilter:             []string{"tv", "music"},
 				CategoriesBlacklist:          []string{},
 				LanguagesFilter:              []string{},
@@ -176,8 +183,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				OutputPath:                   "./out/playlist_all_but_porn_httpaceproxy.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                httpAceProxyTemplate,
-				NameRegexpFilter:             regexp.MustCompile(`.*`),
-				NameRegexpBlacklist:          regexp.MustCompile(`(?i)(.*porn.*)|(.*18\+.*)`),
+				NameRegexpFilter:             regexpsAll,
+				NameRegexpBlacklist:          regexpsPorn,
 				CategoriesFilter:             []string{},
 				CategoriesBlacklist:          []string{"erotic_18_plus", "18+"},
 				LanguagesFilter:              []string{},
@@ -219,10 +226,10 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			),
 		},
 		"$.playlists[0].nameRegexpFilter": []*yaml.Comment{
-			yaml.HeadComment("", " Only keep channels which name matches this regular expression."),
+			yaml.HeadComment("", " Only keep channels which name matches any of these regular expressions."),
 		},
 		"$.playlists[0].nameRegexpBlacklist": []*yaml.Comment{
-			yaml.HeadComment("", " Remove channels which name matches this regular expression."),
+			yaml.HeadComment("", " Remove channels which name matches any of these regular expressions."),
 		},
 		"$.playlists[0].categoriesFilter": []*yaml.Comment{
 			yaml.HeadComment(

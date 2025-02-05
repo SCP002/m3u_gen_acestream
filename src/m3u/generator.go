@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -200,18 +201,22 @@ func filterByName(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist) []acestream.SearchResult {
 	prevSources := acestream.GetSourcesAmount(searchResults)
-	if playlist.NameRegexpFilter != nil {
+	if len(playlist.NameRegexpFilter) > 0 {
 		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
 			sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-				return playlist.NameRegexpFilter.MatchString(item.Name)
+				return lo.SomeBy(playlist.NameRegexpFilter, func(rx *regexp.Regexp) bool {
+					return rx.MatchString(item.Name)
+				})
 			})
 			return sr
 		})
 	}
-	if playlist.NameRegexpBlacklist != nil {
+	if len(playlist.NameRegexpBlacklist) > 0 {
 		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
 			sr.Items = lo.Reject(sr.Items, func(item acestream.Item, _ int) bool {
-				return playlist.NameRegexpBlacklist.MatchString(item.Name)
+				return lo.SomeBy(playlist.NameRegexpBlacklist, func(rx *regexp.Regexp) bool {
+					return rx.MatchString(item.Name)
+				})
 			})
 			return sr
 		})
