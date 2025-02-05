@@ -228,16 +228,16 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			yaml.HeadComment(
 				"",
 				" Only keep channels which category equals to any of these.",
-				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/ for categories list",
-				" for known categories list.",
+				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/",
+				" for known (but not all possible) categories list.",
 			),
 		},
 		"$.playlists[0].categoriesBlacklist": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
 				" Remove channels which category equals to any of these.",
-				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/ for categories list",
-				" for known categories list.",
+				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/",
+				" for known (but not all possible) categories list.",
 			),
 		},
 		"$.playlists[0].languagesFilter": []*yaml.Comment{

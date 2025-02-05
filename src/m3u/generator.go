@@ -49,7 +49,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 			})
 		})
 
-		// Write playlists
+		// Write playlists.
 		log.InfoFi("Writing output", "playlist", playlist.OutputPath)
 		if err := os.MkdirAll(filepath.Dir(playlist.OutputPath), os.ModePerm); err != nil {
 			return errors.Wrapf(err, "Make directory structure for playlist %v", playlist.OutputPath)
