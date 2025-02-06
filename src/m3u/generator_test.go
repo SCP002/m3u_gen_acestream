@@ -22,6 +22,110 @@ type FilterTest struct {
 
 var timeRx = `[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}`
 
+func TestFilterByCountries(t *testing.T) {
+	var consoleBuff bytes.Buffer
+	log := logger.New(logger.DebugLevel, &consoleBuff)
+
+	tests := map[string]FilterTest{
+		"filter is nil": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:      "file.m3u8",
+				CountriesFilter: nil,
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
+			},
+			logOutput: timeRx + ` INFO Rejected: sources "0", by "countries", playlist "file.m3u8"`,
+		},
+		"filter is empty": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:      "file.m3u8",
+				CountriesFilter: []string{},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
+			},
+			logOutput: timeRx + ` INFO Rejected: sources "0", by "countries", playlist "file.m3u8"`,
+		},
+		"filter is empty string, countries have empty string": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru", ""}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:      "file.m3u8",
+				CountriesFilter: []string{""},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru", ""}}}},
+			},
+			logOutput: timeRx + ` INFO Rejected: sources "0", by "countries", playlist "file.m3u8"`,
+		},
+		"filter is empty string, countries does not have empty string": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:      "file.m3u8",
+				CountriesFilter: []string{""},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{}},
+			},
+			logOutput: timeRx + ` INFO Rejected: sources "1", by "countries", playlist "file.m3u8"`,
+		},
+		"filter has empty string": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:      "file.m3u8",
+				CountriesFilter: []string{"", "us"},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
+			},
+			logOutput: timeRx + ` INFO Rejected: sources "0", by "countries", playlist "file.m3u8"`,
+		},
+		"filter is set": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{
+					{Name: "name 1", Countries: []string{"us", "ru"}},
+					{Name: "name 2", Countries: []string{"kz", "us"}},
+					{Name: "name 3", Countries: []string{"kz"}},
+					{Name: "name 4", Countries: []string{"ru", "md"}},
+					{Name: "name 5", Countries: []string{"ru"}},
+				}},
+			},
+			playlist: config.Playlist{
+				OutputPath:      "file.m3u8",
+				CountriesFilter: []string{"us", "kz"},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{
+					{Name: "name 1", Countries: []string{"us", "ru"}},
+					{Name: "name 2", Countries: []string{"kz", "us"}},
+					{Name: "name 3", Countries: []string{"kz"}},
+				}},
+			},
+			logOutput: timeRx + ` INFO Rejected: sources "2", by "countries", playlist "file.m3u8"`,
+		},
+	}
+
+	for name, test := range tests {
+		actual := filterByCountries(log, test.input, test.playlist)
+		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
+		msg := fmt.Sprintf("Bad log output in test '%v'", name)
+		assert.Regexp(t, regexp.MustCompile(test.logOutput), consoleBuff.String(), msg)
+		consoleBuff.Reset()
+	}
+}
+
 func TestFilterByName(t *testing.T) {
 	var consoleBuff bytes.Buffer
 	log := logger.New(logger.DebugLevel, &consoleBuff)
@@ -131,7 +235,7 @@ func TestFilterByName(t *testing.T) {
 		},
 		"filter and blacklist is set": {
 			input: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "xxx skip1 xxx"}, {Name: "xxx skip2 xxx"}, {Name: "xxx keep xxx"}}},
+				{Items: []acestream.Item{{Name: "xxx skip1 xxx"}, {Name: "xxx skip2 xxx"}, {Name: "other"}}},
 				{Items: []acestream.Item{{Name: "xxx skip1 xxx"}, {Name: "xxx skip2 xxx"}, {Name: "xxx keep xxx"}}},
 			},
 			playlist: config.Playlist{
@@ -140,10 +244,10 @@ func TestFilterByName(t *testing.T) {
 				NameRegexpBlacklist: []*regexp.Regexp{regexp.MustCompile(`.*skip1.*`), regexp.MustCompile(`.*skip2.*`)},
 			},
 			expected: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "xxx keep xxx"}}},
+				{Items: []acestream.Item{}},
 				{Items: []acestream.Item{{Name: "xxx keep xxx"}}},
 			},
-			logOutput: timeRx + ` INFO Rejected: sources "4", by "name", playlist "file.m3u8"`,
+			logOutput: timeRx + ` INFO Rejected: sources "5", by "name", playlist "file.m3u8"`,
 		},
 	}
 
