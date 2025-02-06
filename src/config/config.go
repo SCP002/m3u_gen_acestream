@@ -216,8 +216,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 		"$.playlists[0].entryTemplate": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
-				" Template for each channel.",
-				" Available variables are:",
+				" Template for each channel. Available variables are:",
 				" {{.Name}}",
 				" {{.Infohash}}",
 				" {{.Categories}}",
@@ -238,6 +237,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" Only keep channels which category equals to any of these.",
 				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/",
 				" for known (but not all possible) categories list.",
+				" Use empty string to include results with unset category.",
 			),
 		},
 		"$.playlists[0].categoriesBlacklist": []*yaml.Comment{
@@ -246,6 +246,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" Remove channels which category equals to any of these.",
 				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/",
 				" for known (but not all possible) categories list.",
+				" Use empty string to exclude results with unset category.",
 			),
 		},
 		"$.playlists[0].languagesFilter": []*yaml.Comment{

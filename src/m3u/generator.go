@@ -42,7 +42,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 				return Entry{
 					Name:       item.Name,
 					Infohash:   item.Infohash,
-					Categories: strings.Join(item.Categories, ";"),
+					Categories: strings.Join(lo.Compact(item.Categories), ";"),
 					EngineAddr: cfg.EngineAddr,
 					TVGName:    strings.ReplaceAll(item.Name, " ", "_"),
 					IconURL:    lo.FirstOr(iconURLs, ""),
