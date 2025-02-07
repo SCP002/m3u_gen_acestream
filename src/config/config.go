@@ -34,11 +34,15 @@ type Playlist struct {
 	CategoriesFilter             []string           `yaml:"categoriesFilter"`
 	CategoriesBlacklist          []string           `yaml:"categoriesBlacklist"`
 	LanguagesFilter              []string           `yaml:"languagesFilter"`
+	LanguagesBlacklist           []string           `yaml:"languagesBlacklist"`
 	CountriesFilter              []string           `yaml:"countriesFilter"`
+	CountriesBlacklist           []string           `yaml:"countriesBlacklist"`
 	StatusFilter                 []int              `yaml:"statusFilter"`
 	AvailabilityThreshold        float64            `yaml:"availabilityThreshold"`
 	AvailabilityUpdatedThreshold time.Duration      `yaml:"availabilityUpdatedThreshold"`
-	// TODO: Add category mapping
+	// TODO: Add category to category mapping
+	// TODO: Add name to category mapping
+	// TODO: Add name to name mapping
 }
 
 // Init returns config instance and false if config at `filePath` already exist.
@@ -161,7 +165,9 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				CategoriesFilter:             []string{},
 				CategoriesBlacklist:          []string{},
 				LanguagesFilter:              []string{},
+				LanguagesBlacklist:           []string{},
 				CountriesFilter:              []string{},
+				CountriesBlacklist:           []string{},
 				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        0.8,
 				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
@@ -175,7 +181,9 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				CategoriesFilter:             []string{"tv", "music"},
 				CategoriesBlacklist:          []string{},
 				LanguagesFilter:              []string{},
+				LanguagesBlacklist:           []string{},
 				CountriesFilter:              []string{},
+				CountriesBlacklist:           []string{},
 				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        0.8,
 				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
@@ -189,7 +197,9 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				CategoriesFilter:             []string{},
 				CategoriesBlacklist:          []string{"erotic_18_plus", "18+"},
 				LanguagesFilter:              []string{},
+				LanguagesBlacklist:           []string{},
 				CountriesFilter:              []string{},
+				CountriesBlacklist:           []string{},
 				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        0.8,
 				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
@@ -257,12 +267,28 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" Use empty string to include results with unset language.",
 			),
 		},
+		"$.playlists[0].languagesBlacklist": []*yaml.Comment{
+			yaml.HeadComment(
+				"",
+				" Remove channels which language equals to any of these.",
+				" Languages are 3-character, lower case strings, such as 'eng', 'rus' etc.",
+				" Use empty string to exclude results with unset language.",
+			),
+		},
 		"$.playlists[0].countriesFilter": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
 				" Only keep channels which country equals to any of these.",
 				" Countries are 2-character, lower case strings, such as 'us', 'ru' etc. and 'int' for international.",
 				" Use empty string to include results with unset country.",
+			),
+		},
+		"$.playlists[0].countriesBlacklist": []*yaml.Comment{
+			yaml.HeadComment(
+				"",
+				" Remove channels which country equals to any of these.",
+				" Countries are 2-character, lower case strings, such as 'us', 'ru' etc. and 'int' for international.",
+				" Use empty string to exclude results with unset country.",
 			),
 		},
 		"$.playlists[0].statusFilter": []*yaml.Comment{

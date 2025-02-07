@@ -27,26 +27,28 @@ func TestFilterByCountries(t *testing.T) {
 	log := logger.New(logger.DebugLevel, &consoleBuff)
 
 	tests := map[string]FilterTest{
-		"filter is nil": {
+		"filter and blacklist are nil": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
 			},
 			playlist: config.Playlist{
-				OutputPath:      "file.m3u8",
-				CountriesFilter: nil,
+				OutputPath:         "file.m3u8",
+				CountriesFilter:    nil,
+				CountriesBlacklist: nil,
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
 			},
 			logOutput: timeRx + ` INFO Rejected: sources "0", by "countries", playlist "file.m3u8"`,
 		},
-		"filter is empty": {
+		"filter and blacklist are empty": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
 			},
 			playlist: config.Playlist{
-				OutputPath:      "file.m3u8",
-				CountriesFilter: []string{},
+				OutputPath:         "file.m3u8",
+				CountriesFilter:    []string{},
+				CountriesBlacklist: []string{},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
@@ -66,6 +68,19 @@ func TestFilterByCountries(t *testing.T) {
 			},
 			logOutput: timeRx + ` INFO Rejected: sources "0", by "countries", playlist "file.m3u8"`,
 		},
+		"blacklist is empty string, countries have empty string": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru", ""}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:         "file.m3u8",
+				CountriesBlacklist: []string{""},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{}},
+			},
+			logOutput: timeRx + ` INFO Rejected: sources "1", by "countries", playlist "file.m3u8"`,
+		},
 		"filter is empty string, countries does not have empty string": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
@@ -78,6 +93,19 @@ func TestFilterByCountries(t *testing.T) {
 				{Items: []acestream.Item{}},
 			},
 			logOutput: timeRx + ` INFO Rejected: sources "1", by "countries", playlist "file.m3u8"`,
+		},
+		"blacklist is empty string, countries does not have empty string": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:         "file.m3u8",
+				CountriesBlacklist: []string{""},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
+			},
+			logOutput: timeRx + ` INFO Rejected: sources "0", by "countries", playlist "file.m3u8"`,
 		},
 		"filter has empty string": {
 			input: []acestream.SearchResult{
@@ -92,19 +120,33 @@ func TestFilterByCountries(t *testing.T) {
 			},
 			logOutput: timeRx + ` INFO Rejected: sources "0", by "countries", playlist "file.m3u8"`,
 		},
-		"filter is set": {
+		"blacklist has empty string": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:         "file.m3u8",
+				CountriesBlacklist: []string{"", "us"},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{}},
+			},
+			logOutput: timeRx + ` INFO Rejected: sources "1", by "countries", playlist "file.m3u8"`,
+		},
+		"filter and blacklist are set": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{
 					{Name: "name 1", Countries: []string{"us", "ru"}},
 					{Name: "name 2", Countries: []string{"kz", "us"}},
 					{Name: "name 3", Countries: []string{"kz"}},
 					{Name: "name 4", Countries: []string{"ru", "md"}},
-					{Name: "name 5", Countries: []string{"ru"}},
+					{Name: "name 5", Countries: []string{"kz", "ko"}},
 				}},
 			},
 			playlist: config.Playlist{
-				OutputPath:      "file.m3u8",
-				CountriesFilter: []string{"us", "kz"},
+				OutputPath:         "file.m3u8",
+				CountriesFilter:    []string{"us", "kz"},
+				CountriesBlacklist: []string{"ko"},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{
@@ -233,7 +275,7 @@ func TestFilterByName(t *testing.T) {
 			},
 			logOutput: timeRx + ` INFO Rejected: sources "4", by "name", playlist "file.m3u8"`,
 		},
-		"filter and blacklist is set": {
+		"filter and blacklist are set": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "xxx skip1 xxx"}, {Name: "xxx skip2 xxx"}, {Name: "other"}}},
 				{Items: []acestream.Item{{Name: "xxx skip1 xxx"}, {Name: "xxx skip2 xxx"}, {Name: "xxx keep xxx"}}},

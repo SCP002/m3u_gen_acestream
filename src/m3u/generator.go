@@ -183,6 +183,14 @@ func filterByLanguages(log *logger.Logger,
 			return sr
 		})
 	}
+	if len(playlist.LanguagesBlacklist) > 0 {
+		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
+			sr.Items = lo.Reject(sr.Items, func(item acestream.Item, _ int) bool {
+				return lo.Some(item.Languages, playlist.LanguagesBlacklist)
+			})
+			return sr
+		})
+	}
 	currSources := acestream.GetSourcesAmount(searchResults)
 	log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "languages", "playlist", playlist.OutputPath)
 	return searchResults
@@ -197,6 +205,14 @@ func filterByCountries(log *logger.Logger,
 		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
 			sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
 				return lo.Some(item.Countries, playlist.CountriesFilter)
+			})
+			return sr
+		})
+	}
+	if len(playlist.CountriesBlacklist) > 0 {
+		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
+			sr.Items = lo.Reject(sr.Items, func(item acestream.Item, _ int) bool {
+				return lo.Some(item.Countries, playlist.CountriesBlacklist)
 			})
 			return sr
 		})
