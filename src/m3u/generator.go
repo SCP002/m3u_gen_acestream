@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -39,15 +40,24 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 				return icon.URL
 			})
 			return lo.Map(sr.Items, func(item acestream.Item, _ int) Entry {
+				categories := lo.Compact(lo.Uniq(lo.Map(item.Categories, func(category string, _ int) string {
+					return strings.ToLower(category)
+				})))
+				slices.Sort(categories)
 				return Entry{
 					Name:       item.Name,
 					Infohash:   item.Infohash,
-					Categories: strings.Join(lo.Compact(item.Categories), ";"),
+					Categories: strings.Join(categories, ";"),
 					EngineAddr: cfg.EngineAddr,
 					TVGName:    strings.ReplaceAll(item.Name, " ", "_"),
 					IconURL:    lo.FirstOr(iconURLs, ""),
 				}
 			})
+		})
+
+		// Sort entries by categories.
+		slices.SortFunc(entries, func(a, b Entry) int {
+			return strings.Compare(a.Categories, b.Categories)
 		})
 
 		// Write playlists.
