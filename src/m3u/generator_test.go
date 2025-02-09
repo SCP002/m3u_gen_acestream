@@ -55,7 +55,7 @@ func TestFilterByCategories(t *testing.T) {
 			},
 			logOutput: timeRx + ` INFO Rejected: sources "0", by "categories", playlist "file.m3u8"`,
 		},
-		"filter is empty string, languages have empty string": {
+		"filter is empty string, categories have empty string": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", Categories: []string{"eng", "rus", ""}}}},
 			},
@@ -68,7 +68,7 @@ func TestFilterByCategories(t *testing.T) {
 			},
 			logOutput: timeRx + ` INFO Rejected: sources "0", by "categories", playlist "file.m3u8"`,
 		},
-		"blacklist is empty string, languages have empty string": {
+		"blacklist is empty string, categories have empty string": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", Categories: []string{"eng", "rus", ""}}}},
 			},
@@ -81,7 +81,7 @@ func TestFilterByCategories(t *testing.T) {
 			},
 			logOutput: timeRx + ` INFO Rejected: sources "1", by "categories", playlist "file.m3u8"`,
 		},
-		"filter is empty string, languages does not have empty string": {
+		"filter is empty string, categories does not have empty string": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", Categories: []string{"movies", "sport"}}}},
 			},
@@ -94,7 +94,7 @@ func TestFilterByCategories(t *testing.T) {
 			},
 			logOutput: timeRx + ` INFO Rejected: sources "1", by "categories", playlist "file.m3u8"`,
 		},
-		"blacklist is empty string, languages does not have empty string": {
+		"blacklist is empty string, categories does not have empty string": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", Categories: []string{"movies", "sport"}}}},
 			},
