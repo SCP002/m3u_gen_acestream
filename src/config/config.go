@@ -32,15 +32,17 @@ type Playlist struct {
 	NameRegexpFilter             []*regexp.Regexp   `yaml:"nameRegexpFilter"`
 	NameRegexpBlacklist          []*regexp.Regexp   `yaml:"nameRegexpBlacklist"`
 	CategoriesFilter             []string           `yaml:"categoriesFilter"`
+	CategoriesFilterStrict       bool               `yaml:"categoriesFilterStrict"`
 	CategoriesBlacklist          []string           `yaml:"categoriesBlacklist"`
 	LanguagesFilter              []string           `yaml:"languagesFilter"`
+	LanguagesFilterStrict        bool               `yaml:"languagesFilterStrict"`
 	LanguagesBlacklist           []string           `yaml:"languagesBlacklist"`
 	CountriesFilter              []string           `yaml:"countriesFilter"`
+	CountriesFilterStrict        bool               `yaml:"countriesFilterStrict"`
 	CountriesBlacklist           []string           `yaml:"countriesBlacklist"`
 	StatusFilter                 []int              `yaml:"statusFilter"`
 	AvailabilityThreshold        float64            `yaml:"availabilityThreshold"`
 	AvailabilityUpdatedThreshold time.Duration      `yaml:"availabilityUpdatedThreshold"`
-	// TODO: Add strict filter option
 	// TODO: Add category to category mapping
 	// TODO: Add name to category mapping
 	// TODO: Add name to name mapping
@@ -164,10 +166,13 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				NameRegexpFilter:             regexpsAll,
 				NameRegexpBlacklist:          []*regexp.Regexp{},
 				CategoriesFilter:             []string{},
+				CategoriesFilterStrict:       false,
 				CategoriesBlacklist:          []string{},
 				LanguagesFilter:              []string{},
+				LanguagesFilterStrict:        false,
 				LanguagesBlacklist:           []string{},
 				CountriesFilter:              []string{},
+				CountriesFilterStrict:        false,
 				CountriesBlacklist:           []string{},
 				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        0.8,
@@ -180,10 +185,13 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				NameRegexpFilter:             regexpsAll,
 				NameRegexpBlacklist:          []*regexp.Regexp{},
 				CategoriesFilter:             []string{"tv", "music"},
+				CategoriesFilterStrict:       false,
 				CategoriesBlacklist:          []string{},
 				LanguagesFilter:              []string{},
+				LanguagesFilterStrict:        false,
 				LanguagesBlacklist:           []string{},
 				CountriesFilter:              []string{},
+				CountriesFilterStrict:        false,
 				CountriesBlacklist:           []string{},
 				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        0.8,
@@ -196,10 +204,13 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				NameRegexpFilter:             regexpsAll,
 				NameRegexpBlacklist:          regexpsPorn,
 				CategoriesFilter:             []string{},
+				CategoriesFilterStrict:       false,
 				CategoriesBlacklist:          []string{"erotic_18_plus", "18+"},
 				LanguagesFilter:              []string{},
+				LanguagesFilterStrict:        false,
 				LanguagesBlacklist:           []string{},
 				CountriesFilter:              []string{},
+				CountriesFilterStrict:        false,
 				CountriesBlacklist:           []string{},
 				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        0.8,
@@ -251,6 +262,12 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" Use empty string to include results with unset category.",
 			),
 		},
+		"$.playlists[0].categoriesFilterStrict": []*yaml.Comment{
+			yaml.HeadComment(
+				"",
+				" If true, only keep channels with categories that are in filter, but not any other.",
+			),
+		},
 		"$.playlists[0].categoriesBlacklist": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
@@ -268,6 +285,12 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" Use empty string to include results with unset language.",
 			),
 		},
+		"$.playlists[0].languagesFilterStrict": []*yaml.Comment{
+			yaml.HeadComment(
+				"",
+				" If true, only keep channels with languages that are in filter, but not any other.",
+			),
+		},
 		"$.playlists[0].languagesBlacklist": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
@@ -282,6 +305,12 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" Only keep channels which country equals to any of these.",
 				" Countries are 2-character, lower case strings, such as 'us', 'ru' etc. and 'int' for international.",
 				" Use empty string to include results with unset country.",
+			),
+		},
+		"$.playlists[0].countriesFilterStrict": []*yaml.Comment{
+			yaml.HeadComment(
+				"",
+				" If true, only keep channels with countries that are in filter, but not any other.",
 			),
 		},
 		"$.playlists[0].countriesBlacklist": []*yaml.Comment{

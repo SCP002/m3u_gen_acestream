@@ -152,7 +152,12 @@ func filterByCategories(log *logger.Logger,
 	if len(playlist.CategoriesFilter) > 0 {
 		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
 			sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-				return lo.Some(item.Categories, playlist.CategoriesFilter)
+				if playlist.CategoriesFilterStrict {
+					lenEqual := len(item.Categories) == len(playlist.CategoriesFilter)
+					return lenEqual && lo.Every(item.Categories, playlist.CategoriesFilter)
+				} else {
+					return lo.Some(item.Categories, playlist.CategoriesFilter)
+				}
 			})
 			return sr
 		})
@@ -178,7 +183,12 @@ func filterByLanguages(log *logger.Logger,
 	if len(playlist.LanguagesFilter) > 0 {
 		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
 			sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-				return lo.Some(item.Languages, playlist.LanguagesFilter)
+				if playlist.LanguagesFilterStrict {
+					lenEqual := len(item.Languages) == len(playlist.LanguagesFilter)
+					return lenEqual && lo.Every(item.Languages, playlist.LanguagesFilter)
+				} else {
+					return lo.Some(item.Languages, playlist.LanguagesFilter)
+				}
 			})
 			return sr
 		})
@@ -204,7 +214,12 @@ func filterByCountries(log *logger.Logger,
 	if len(playlist.CountriesFilter) > 0 {
 		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
 			sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-				return lo.Some(item.Countries, playlist.CountriesFilter)
+				if playlist.CountriesFilterStrict {
+					lenEqual := len(item.Countries) == len(playlist.CountriesFilter)
+					return lenEqual && lo.Every(item.Countries, playlist.CountriesFilter)
+				} else {
+					return lo.Some(item.Countries, playlist.CountriesFilter)
+				}
 			})
 			return sr
 		})
