@@ -23,6 +23,41 @@ type FilterTest struct {
 
 var timeRx = `[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}`
 
+func TestFilterByAvailability(t *testing.T) {
+	var consoleBuff bytes.Buffer
+	log := logger.New(logger.DebugLevel, &consoleBuff)
+
+	tests := map[string]FilterTest{
+		"two items exceed threshold": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Availability: 1.0}}},
+				{Items: []acestream.Item{{Name: "name 2", Availability: 0.8}}},
+				{Items: []acestream.Item{{Name: "name 3", Availability: 0.5}}},
+				{Items: []acestream.Item{{Name: "name 4", Availability: 0.5}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:            "file.m3u8",
+				AvailabilityThreshold: 0.8,
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Availability: 1.0}}},
+				{Items: []acestream.Item{{Name: "name 2", Availability: 0.8}}},
+				{Items: []acestream.Item{}},
+				{Items: []acestream.Item{}},
+			},
+			logOutput: timeRx + ` INFO Rejected: sources "2", by "availability", playlist "file.m3u8"`,
+		},
+	}
+
+	for name, test := range tests {
+		actual := filterByAvailability(log, test.input, test.playlist)
+		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
+		msg := fmt.Sprintf("Bad log output in test '%v'", name)
+		assert.Regexp(t, regexp.MustCompile(test.logOutput), consoleBuff.String(), msg)
+		consoleBuff.Reset()
+	}
+}
+
 func TestFilterByAvailabilityUpdateTime(t *testing.T) {
 	var consoleBuff bytes.Buffer
 	log := logger.New(logger.DebugLevel, &consoleBuff)
