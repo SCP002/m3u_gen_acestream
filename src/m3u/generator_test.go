@@ -30,19 +30,15 @@ func TestFilterByAvailability(t *testing.T) {
 	tests := map[string]FilterTest{
 		"two items exceed threshold": {
 			input: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "name 1", Availability: 1.0}}},
-				{Items: []acestream.Item{{Name: "name 2", Availability: 0.8}}},
-				{Items: []acestream.Item{{Name: "name 3", Availability: 0.5}}},
-				{Items: []acestream.Item{{Name: "name 4", Availability: 0.5}}},
+				{Items: []acestream.Item{{Name: "name 1", Availability: 1.0}, {Name: "name 2", Availability: 0.8}}},
+				{Items: []acestream.Item{{Name: "name 3", Availability: 0.5}, {Name: "name 4", Availability: 0.5}}},
 			},
 			playlist: config.Playlist{
 				OutputPath:            "file.m3u8",
 				AvailabilityThreshold: 0.8,
 			},
 			expected: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "name 1", Availability: 1.0}}},
-				{Items: []acestream.Item{{Name: "name 2", Availability: 0.8}}},
-				{Items: []acestream.Item{}},
+				{Items: []acestream.Item{{Name: "name 1", Availability: 1.0}, {Name: "name 2", Availability: 0.8}}},
 				{Items: []acestream.Item{}},
 			},
 			logOutput: timeRx + ` INFO Rejected: sources "2", by "availability", playlist "file.m3u8"`,
@@ -67,9 +63,13 @@ func TestFilterByAvailabilityUpdateTime(t *testing.T) {
 	tests := map[string]FilterTest{
 		"two items exceed threshold": {
 			input: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "name 1", AvailabilityUpdatedAt: now - 100}}},
-				{Items: []acestream.Item{{Name: "name 2", AvailabilityUpdatedAt: now - 300}}},
-				{Items: []acestream.Item{{Name: "name 3", AvailabilityUpdatedAt: now - 400}}},
+				{Items: []acestream.Item{
+					{Name: "name 1", AvailabilityUpdatedAt: now - 100},
+					{Name: "name 2", AvailabilityUpdatedAt: now - 300},
+				}},
+				{Items: []acestream.Item{
+					{Name: "name 3", AvailabilityUpdatedAt: now - 400},
+				}},
 			},
 			playlist: config.Playlist{
 				OutputPath:                   "file.m3u8",
@@ -77,7 +77,6 @@ func TestFilterByAvailabilityUpdateTime(t *testing.T) {
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", AvailabilityUpdatedAt: now - 100}}},
-				{Items: []acestream.Item{}},
 				{Items: []acestream.Item{}},
 			},
 			logOutput: timeRx + ` INFO Rejected: sources "2", by "availability update time", playlist "file.m3u8"`,
@@ -209,6 +208,8 @@ func TestFilterByCategories(t *testing.T) {
 				{Items: []acestream.Item{
 					{Name: "name 1", Categories: []string{"movies", "sport"}},
 					{Name: "name 2", Categories: []string{"regional", "movies"}},
+				}},
+				{Items: []acestream.Item{
 					{Name: "name 3", Categories: []string{"regional"}},
 					{Name: "name 4", Categories: []string{"sport", "documentaries"}},
 					{Name: "name 5", Categories: []string{"regional", "fashion"}},
@@ -223,6 +224,8 @@ func TestFilterByCategories(t *testing.T) {
 				{Items: []acestream.Item{
 					{Name: "name 1", Categories: []string{"movies", "sport"}},
 					{Name: "name 2", Categories: []string{"regional", "movies"}},
+				}},
+				{Items: []acestream.Item{
 					{Name: "name 3", Categories: []string{"regional"}},
 				}},
 			},
@@ -355,6 +358,8 @@ func TestFilterByLanguages(t *testing.T) {
 				{Items: []acestream.Item{
 					{Name: "name 1", Languages: []string{"eng", "rus"}},
 					{Name: "name 2", Languages: []string{"kaz", "eng"}},
+				}},
+				{Items: []acestream.Item{
 					{Name: "name 3", Languages: []string{"kaz"}},
 					{Name: "name 4", Languages: []string{"rus", "ron"}},
 					{Name: "name 5", Languages: []string{"kaz", "kor"}},
@@ -369,6 +374,8 @@ func TestFilterByLanguages(t *testing.T) {
 				{Items: []acestream.Item{
 					{Name: "name 1", Languages: []string{"eng", "rus"}},
 					{Name: "name 2", Languages: []string{"kaz", "eng"}},
+				}},
+				{Items: []acestream.Item{
 					{Name: "name 3", Languages: []string{"kaz"}},
 				}},
 			},
@@ -502,6 +509,8 @@ func TestFilterByCountries(t *testing.T) {
 					{Name: "name 1", Countries: []string{"us", "ru"}},
 					{Name: "name 2", Countries: []string{"kz", "us"}},
 					{Name: "name 3", Countries: []string{"kz"}},
+				}},
+				{Items: []acestream.Item{
 					{Name: "name 4", Countries: []string{"ru", "md"}},
 					{Name: "name 5", Countries: []string{"kz", "ko"}},
 				}},
@@ -517,6 +526,7 @@ func TestFilterByCountries(t *testing.T) {
 					{Name: "name 2", Countries: []string{"kz", "us"}},
 					{Name: "name 3", Countries: []string{"kz"}},
 				}},
+				{Items: []acestream.Item{}},
 			},
 			logOutput: timeRx + ` INFO Rejected: sources "2", by "countries", playlist "file.m3u8"`,
 		},
