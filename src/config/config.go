@@ -40,6 +40,7 @@ type Playlist struct {
 	StatusFilter                 []int              `yaml:"statusFilter"`
 	AvailabilityThreshold        float64            `yaml:"availabilityThreshold"`
 	AvailabilityUpdatedThreshold time.Duration      `yaml:"availabilityUpdatedThreshold"`
+	// TODO: Add strict filter option
 	// TODO: Add category to category mapping
 	// TODO: Add name to category mapping
 	// TODO: Add name to name mapping
