@@ -23,6 +23,37 @@ type FilterTest struct {
 
 var timeRx = `[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}`
 
+func TestFilterByStatus(t *testing.T) {
+	var consoleBuff bytes.Buffer
+	log := logger.New(logger.DebugLevel, &consoleBuff)
+
+	tests := map[string]FilterTest{
+		"two items with bad status": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Status: 2}, {Name: "name 2", Status: 3}}},
+				{Items: []acestream.Item{{Name: "name 3", Status: 1}, {Name: "name 4", Status: -1}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:   "file.m3u8",
+				StatusFilter: []int{1, 2},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Status: 2}}},
+				{Items: []acestream.Item{{Name: "name 3", Status: 1}}},
+			},
+			logOutput: timeRx + ` INFO Rejected: sources "2", by "status", playlist "file.m3u8"`,
+		},
+	}
+
+	for name, test := range tests {
+		actual := filterByStatus(log, test.input, test.playlist)
+		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
+		msg := fmt.Sprintf("Bad log output in test '%v'", name)
+		assert.Regexp(t, regexp.MustCompile(test.logOutput), consoleBuff.String(), msg)
+		consoleBuff.Reset()
+	}
+}
+
 func TestFilterByAvailability(t *testing.T) {
 	var consoleBuff bytes.Buffer
 	log := logger.New(logger.DebugLevel, &consoleBuff)
