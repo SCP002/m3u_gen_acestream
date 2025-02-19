@@ -99,11 +99,8 @@ func filterByStatus(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist) []acestream.SearchResult {
 	prevSources := acestream.GetSourcesAmount(searchResults)
-	searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
-		sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-			return lo.Contains(playlist.StatusFilter, item.Status)
-		})
-		return sr
+	searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+		return lo.Contains(playlist.StatusFilter, item.Status)
 	})
 	currSources := acestream.GetSourcesAmount(searchResults)
 	log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "status", "playlist", playlist.OutputPath)
@@ -115,11 +112,8 @@ func filterByAvailability(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist) []acestream.SearchResult {
 	prevSources := acestream.GetSourcesAmount(searchResults)
-	searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
-		sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-			return item.Availability >= playlist.AvailabilityThreshold
-		})
-		return sr
+	searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+		return item.Availability >= playlist.AvailabilityThreshold
 	})
 	currSources := acestream.GetSourcesAmount(searchResults)
 	log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "availability", "playlist", playlist.OutputPath)
@@ -131,12 +125,9 @@ func filterByAvailabilityUpdateTime(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist) []acestream.SearchResult {
 	prevSources := acestream.GetSourcesAmount(searchResults)
-	searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
-		sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-			availabilityUpdatedAgo := time.Now().Unix() - item.AvailabilityUpdatedAt
-			return availabilityUpdatedAgo <= int64(playlist.AvailabilityUpdatedThreshold.Seconds())
-		})
-		return sr
+	searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+		availabilityUpdatedAgo := time.Now().Unix() - item.AvailabilityUpdatedAt
+		return availabilityUpdatedAgo <= int64(playlist.AvailabilityUpdatedThreshold.Seconds())
 	})
 	currSources := acestream.GetSourcesAmount(searchResults)
 	log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "availability update time",
@@ -150,23 +141,17 @@ func filterByCategories(log *logger.Logger,
 	playlist config.Playlist) []acestream.SearchResult {
 	prevSources := acestream.GetSourcesAmount(searchResults)
 	if len(playlist.CategoriesFilter) > 0 {
-		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
-			sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-				if playlist.CategoriesFilterStrict {
-					return lo.Every(playlist.CategoriesFilter, item.Categories)
-				} else {
-					return lo.Some(item.Categories, playlist.CategoriesFilter)
-				}
-			})
-			return sr
+		searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			if playlist.CategoriesFilterStrict {
+				return lo.Every(playlist.CategoriesFilter, item.Categories)
+			} else {
+				return lo.Some(item.Categories, playlist.CategoriesFilter)
+			}
 		})
 	}
 	if len(playlist.CategoriesBlacklist) > 0 {
-		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
-			sr.Items = lo.Reject(sr.Items, func(item acestream.Item, _ int) bool {
-				return lo.Some(item.Categories, playlist.CategoriesBlacklist)
-			})
-			return sr
+		searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			return lo.Some(item.Categories, playlist.CategoriesBlacklist)
 		})
 	}
 	currSources := acestream.GetSourcesAmount(searchResults)
@@ -180,23 +165,17 @@ func filterByLanguages(log *logger.Logger,
 	playlist config.Playlist) []acestream.SearchResult {
 	prevSources := acestream.GetSourcesAmount(searchResults)
 	if len(playlist.LanguagesFilter) > 0 {
-		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
-			sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-				if playlist.LanguagesFilterStrict {
-					return lo.Every(playlist.LanguagesFilter, item.Languages)
-				} else {
-					return lo.Some(item.Languages, playlist.LanguagesFilter)
-				}
-			})
-			return sr
+		searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			if playlist.LanguagesFilterStrict {
+				return lo.Every(playlist.LanguagesFilter, item.Languages)
+			} else {
+				return lo.Some(item.Languages, playlist.LanguagesFilter)
+			}
 		})
 	}
 	if len(playlist.LanguagesBlacklist) > 0 {
-		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
-			sr.Items = lo.Reject(sr.Items, func(item acestream.Item, _ int) bool {
-				return lo.Some(item.Languages, playlist.LanguagesBlacklist)
-			})
-			return sr
+		searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			return lo.Some(item.Languages, playlist.LanguagesBlacklist)
 		})
 	}
 	currSources := acestream.GetSourcesAmount(searchResults)
@@ -210,23 +189,17 @@ func filterByCountries(log *logger.Logger,
 	playlist config.Playlist) []acestream.SearchResult {
 	prevSources := acestream.GetSourcesAmount(searchResults)
 	if len(playlist.CountriesFilter) > 0 {
-		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
-			sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-				if playlist.CountriesFilterStrict {
-					return lo.Every(playlist.CountriesFilter, item.Countries)
-				} else {
-					return lo.Some(item.Countries, playlist.CountriesFilter)
-				}
-			})
-			return sr
+		searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			if playlist.CountriesFilterStrict {
+				return lo.Every(playlist.CountriesFilter, item.Countries)
+			} else {
+				return lo.Some(item.Countries, playlist.CountriesFilter)
+			}
 		})
 	}
 	if len(playlist.CountriesBlacklist) > 0 {
-		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
-			sr.Items = lo.Reject(sr.Items, func(item acestream.Item, _ int) bool {
-				return lo.Some(item.Countries, playlist.CountriesBlacklist)
-			})
-			return sr
+		searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			return lo.Some(item.Countries, playlist.CountriesBlacklist)
 		})
 	}
 	currSources := acestream.GetSourcesAmount(searchResults)
@@ -240,32 +213,56 @@ func filterByName(log *logger.Logger,
 	playlist config.Playlist) []acestream.SearchResult {
 	prevSources := acestream.GetSourcesAmount(searchResults)
 	if len(playlist.NameRegexpFilter) > 0 {
-		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
-			sr.Items = lo.Filter(sr.Items, func(item acestream.Item, _ int) bool {
-				return lo.SomeBy(playlist.NameRegexpFilter, func(rx *regexp.Regexp) bool {
-					if rx == nil {
-						return true
-					}
-					return rx.MatchString(item.Name)
-				})
+		searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			return lo.SomeBy(playlist.NameRegexpFilter, func(rx *regexp.Regexp) bool {
+				if rx == nil {
+					return true
+				}
+				return rx.MatchString(item.Name)
 			})
-			return sr
 		})
 	}
 	if len(playlist.NameRegexpBlacklist) > 0 {
-		searchResults = lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
-			sr.Items = lo.Reject(sr.Items, func(item acestream.Item, _ int) bool {
-				return lo.SomeBy(playlist.NameRegexpBlacklist, func(rx *regexp.Regexp) bool {
-					if rx == nil {
-						return false
-					}
-					return rx.MatchString(item.Name)
-				})
+		searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			return lo.SomeBy(playlist.NameRegexpBlacklist, func(rx *regexp.Regexp) bool {
+				if rx == nil {
+					return false
+				}
+				return rx.MatchString(item.Name)
 			})
-			return sr
 		})
 	}
 	currSources := acestream.GetSourcesAmount(searchResults)
 	log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "name", "playlist", playlist.OutputPath)
 	return searchResults
+}
+
+// filterAcestreamItems runs `cb` function for every acestream item in `searchResults`.
+//
+// `cb` function should return 'true' if item should stay in `searchResults`.
+//
+// `cb` function arguments are:
+//   - `item` - acestream item.
+//   - `idx` - current item index.
+func filterAcestreamItems(searchResults []acestream.SearchResult,
+	cb func(item acestream.Item, idx int) bool) []acestream.SearchResult {
+	return lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
+		sr.Items = lo.Filter(sr.Items, cb)
+		return sr
+	})
+}
+
+// rejectAcestreamItems runs `cb` function for every acestream item in `searchResults`.
+//
+// `cb` function should return 'true' if item should be removed from `searchResults`.
+//
+// `cb` function arguments are:
+//   - `item` - acestream item.
+//   - `idx` - current item index.
+func rejectAcestreamItems(searchResults []acestream.SearchResult,
+	cb func(item acestream.Item, idx int) bool) []acestream.SearchResult {
+	return lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
+		sr.Items = lo.Reject(sr.Items, cb)
+		return sr
+	})
 }
