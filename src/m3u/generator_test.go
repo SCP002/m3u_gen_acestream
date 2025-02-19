@@ -244,11 +244,11 @@ func TestFilterByCategories(t *testing.T) {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{
 					{Name: "name 1", Categories: []string{"movies", "sport"}},
-					{Name: "name 2", Categories: []string{"regional", "movies"}},
+					{Name: "name 2", Categories: []string{"regional", "movies", "documentaries"}},
 					{Name: "name 3", Categories: []string{"regional"}},
 				}},
 				{Items: []acestream.Item{
-					{Name: "name 4", Categories: []string{"sport", "ron"}},
+					{Name: "name 4", Categories: []string{"sport", "documentaries"}},
 				}},
 			},
 			playlist: config.Playlist{
@@ -258,7 +258,7 @@ func TestFilterByCategories(t *testing.T) {
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{
 					{Name: "name 1", Categories: []string{"movies", "sport"}},
-					{Name: "name 2", Categories: []string{"regional", "movies"}},
+					{Name: "name 2", Categories: []string{"regional", "movies", "documentaries"}},
 					{Name: "name 3", Categories: []string{"regional"}},
 				}},
 				{Items: []acestream.Item{}},
@@ -279,18 +279,19 @@ func TestFilterByCategories(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:             "file.m3u8",
-				CategoriesFilter:       []string{"movies", "regional"},
+				CategoriesFilter:       []string{"movies", "regional", "documentaries"},
 				CategoriesFilterStrict: true,
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{
+					{Name: "name 2", Categories: []string{"documentaries", "movies"}},
 					{Name: "name 3", Categories: []string{"regional", "movies"}},
 				}},
 				{Items: []acestream.Item{
 					{Name: "name 4", Categories: []string{"movies", "regional"}},
 				}},
 			},
-			logLines: []string{timeRx + ` INFO Rejected: sources "3", by "categories", playlist "file.m3u8"`},
+			logLines: []string{timeRx + ` INFO Rejected: sources "2", by "categories", playlist "file.m3u8"`},
 		},
 		"filter and blacklist are set": {
 			input: []acestream.SearchResult{
@@ -448,7 +449,7 @@ func TestFilterByLanguages(t *testing.T) {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{
 					{Name: "name 1", Languages: []string{"eng", "rus"}},
-					{Name: "name 2", Languages: []string{"kaz", "eng"}},
+					{Name: "name 2", Languages: []string{"kaz", "eng", "ron"}},
 					{Name: "name 3", Languages: []string{"kaz"}},
 				}},
 				{Items: []acestream.Item{
@@ -462,7 +463,7 @@ func TestFilterByLanguages(t *testing.T) {
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{
 					{Name: "name 1", Languages: []string{"eng", "rus"}},
-					{Name: "name 2", Languages: []string{"kaz", "eng"}},
+					{Name: "name 2", Languages: []string{"kaz", "eng", "ron"}},
 					{Name: "name 3", Languages: []string{"kaz"}},
 				}},
 				{Items: []acestream.Item{}},
@@ -483,18 +484,19 @@ func TestFilterByLanguages(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:            "file.m3u8",
-				LanguagesFilter:       []string{"eng", "kaz"},
+				LanguagesFilter:       []string{"eng", "kaz", "md"},
 				LanguagesFilterStrict: true,
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{
+					{Name: "name 2", Languages: []string{"md", "eng"}},
 					{Name: "name 3", Languages: []string{"kaz", "eng"}},
 				}},
 				{Items: []acestream.Item{
 					{Name: "name 4", Languages: []string{"eng", "kaz"}},
 				}},
 			},
-			logLines: []string{timeRx + ` INFO Rejected: sources "3", by "languages", playlist "file.m3u8"`},
+			logLines: []string{timeRx + ` INFO Rejected: sources "2", by "languages", playlist "file.m3u8"`},
 		},
 		"filter and blacklist are set": {
 			input: []acestream.SearchResult{
@@ -652,7 +654,7 @@ func TestFilterByCountries(t *testing.T) {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{
 					{Name: "name 1", Countries: []string{"us", "ru"}},
-					{Name: "name 2", Countries: []string{"kz", "us"}},
+					{Name: "name 2", Countries: []string{"kz", "us", "md"}},
 					{Name: "name 3", Countries: []string{"kz"}},
 				}},
 				{Items: []acestream.Item{
@@ -666,7 +668,7 @@ func TestFilterByCountries(t *testing.T) {
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{
 					{Name: "name 1", Countries: []string{"us", "ru"}},
-					{Name: "name 2", Countries: []string{"kz", "us"}},
+					{Name: "name 2", Countries: []string{"kz", "us", "md"}},
 					{Name: "name 3", Countries: []string{"kz"}},
 				}},
 				{Items: []acestream.Item{}},
@@ -687,18 +689,19 @@ func TestFilterByCountries(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:            "file.m3u8",
-				CountriesFilter:       []string{"us", "kz"},
+				CountriesFilter:       []string{"us", "kz", "md"},
 				CountriesFilterStrict: true,
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{
+					{Name: "name 2", Countries: []string{"md", "us"}},
 					{Name: "name 3", Countries: []string{"kz", "us"}},
 				}},
 				{Items: []acestream.Item{
 					{Name: "name 4", Countries: []string{"us", "kz"}},
 				}},
 			},
-			logLines: []string{timeRx + ` INFO Rejected: sources "3", by "countries", playlist "file.m3u8"`},
+			logLines: []string{timeRx + ` INFO Rejected: sources "2", by "countries", playlist "file.m3u8"`},
 		},
 		"filter and blacklist are set": {
 			input: []acestream.SearchResult{
