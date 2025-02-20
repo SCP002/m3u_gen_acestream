@@ -162,7 +162,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 	entryLine1 := `#EXTINF:-1 group-title="{{.Categories}}",{{.Name}}`
 	entryMpegtsLink := `http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}`
 	entryHlsLink := `http://{{.EngineAddr}}/ace/manifest.m3u8?infohash={{.Infohash}}`
-	entryHttpAceProxyLink := `http://127.0.0.1:8000/ace/getstream?infohash={{.Infohash}}`
+	entryHttpAceProxyLink := `http://127.0.0.1:8000/infohash/{{.Infohash}}/stream.mp4`
 
 	mpegTsTemplate := template.Must(template.New("mpegTsTemplate").Parse(entryLine1 + "\n" + entryMpegtsLink))
 	hlsTemplate := template.Must(template.New("hlsTemplate").Parse(entryLine1 + "\n" + entryHlsLink))
