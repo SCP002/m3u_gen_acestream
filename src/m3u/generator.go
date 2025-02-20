@@ -82,7 +82,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 	return nil
 }
 
-// remap returns `searchResults` with categories and names changed by criterias in `playlist`.
+// remap returns `searchResults` with categories changed by criterias in `playlist`.
 func remap(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist) []acestream.SearchResult {

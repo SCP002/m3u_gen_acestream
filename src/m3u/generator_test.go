@@ -36,10 +36,11 @@ func TestRemapCategoryToCategory(t *testing.T) {
 				}},
 				{Items: []acestream.Item{
 					{Name: "name 3", Categories: []string{"movies", ""}},
-					{Name: "name 4", Categories: []string{"music", "documentary"}},
-					{Name: "name 5", Categories: []string{"tv", "tv"}},
-					{Name: "name 6", Categories: []string{""}},
-					{Name: "name 7", Categories: []string{}},
+					{Name: "name 4", Categories: []string{"audio", "unknown"}},
+					{Name: "name 5", Categories: []string{"music", "documentary"}},
+					{Name: "name 6", Categories: []string{"tv", "tv"}},
+					{Name: "name 7", Categories: []string{""}},
+					{Name: "name 8", Categories: []string{}},
 				}},
 			},
 			playlist: config.Playlist{
@@ -57,10 +58,11 @@ func TestRemapCategoryToCategory(t *testing.T) {
 				}},
 				{Items: []acestream.Item{
 					{Name: "name 3", Categories: []string{"movies", "unknown"}},
-					{Name: "name 4", Categories: []string{"audio", "documentary"}},
-					{Name: "name 5", Categories: []string{"television", "television"}},
-					{Name: "name 6", Categories: []string{"unknown"}},
-					{Name: "name 7", Categories: []string{}},
+					{Name: "name 4", Categories: []string{"audio", "unknown"}},
+					{Name: "name 5", Categories: []string{"audio", "documentary"}},
+					{Name: "name 6", Categories: []string{"television", "television"}},
+					{Name: "name 7", Categories: []string{"unknown"}},
+					{Name: "name 8", Categories: []string{}},
 				}},
 			},
 			logLines: []string{
