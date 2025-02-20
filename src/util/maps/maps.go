@@ -5,11 +5,10 @@ import "regexp"
 // ForEveryMatchingRx funs `cb` for every regular expression (keys in `rxMap`) matching `match`.
 //
 // `cb` argument is a `rxMap` value.
-func ForEveryMatchingRx(rxMap map[string]string, match string, cb func(mapVal string)) {
-	for rxStr, val := range rxMap {
-		rx := regexp.MustCompile(rxStr)
-		if rx.MatchString(match) {
-			cb(val)
+func ForEveryMatchingRx[T any](rxMap map[string]T, match string, cb func(mapVal T)) {
+	for rx, mapVal := range rxMap {
+		if regexp.MustCompile(rx).MatchString(match) {
+			cb(mapVal)
 		}
 	}
 }

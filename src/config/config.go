@@ -26,25 +26,25 @@ type BlockStr string
 
 // Playlist represents set of parameters for M3U playlist generation such as output path, template and filter criterias.
 type Playlist struct {
-	OutputPath                   string             `yaml:"outputPath"`
-	HeaderTemplate               BlockStr           `yaml:"headerTemplate"`
-	EntryTemplate                *template.Template `yaml:"entryTemplate"`
-	CategoryRxToCategoryMap      map[string]string  `yaml:"categoryRxToCategoryMap"`
-	// TODO: Add name to category mapping
-	NameRegexpFilter             []*regexp.Regexp   `yaml:"nameRegexpFilter"`
-	NameRegexpBlacklist          []*regexp.Regexp   `yaml:"nameRegexpBlacklist"`
-	CategoriesFilter             []string           `yaml:"categoriesFilter"`
-	CategoriesFilterStrict       bool               `yaml:"categoriesFilterStrict"`
-	CategoriesBlacklist          []string           `yaml:"categoriesBlacklist"`
-	LanguagesFilter              []string           `yaml:"languagesFilter"`
-	LanguagesFilterStrict        bool               `yaml:"languagesFilterStrict"`
-	LanguagesBlacklist           []string           `yaml:"languagesBlacklist"`
-	CountriesFilter              []string           `yaml:"countriesFilter"`
-	CountriesFilterStrict        bool               `yaml:"countriesFilterStrict"`
-	CountriesBlacklist           []string           `yaml:"countriesBlacklist"`
-	StatusFilter                 []int              `yaml:"statusFilter"`
-	AvailabilityThreshold        float64            `yaml:"availabilityThreshold"`
-	AvailabilityUpdatedThreshold time.Duration      `yaml:"availabilityUpdatedThreshold"`
+	OutputPath                   string              `yaml:"outputPath"`
+	HeaderTemplate               BlockStr            `yaml:"headerTemplate"`
+	EntryTemplate                *template.Template  `yaml:"entryTemplate"`
+	CategoryRxToCategoryMap      map[string]string   `yaml:"categoryRxToCategoryMap"`
+	NameRxToCategoriesMap        map[string][]string `yaml:"nameRxToCategoriesMap"`
+	NameRegexpFilter             []*regexp.Regexp    `yaml:"nameRegexpFilter"`
+	NameRegexpBlacklist          []*regexp.Regexp    `yaml:"nameRegexpBlacklist"`
+	CategoriesFilter             []string            `yaml:"categoriesFilter"`
+	CategoriesFilterStrict       bool                `yaml:"categoriesFilterStrict"`
+	CategoriesBlacklist          []string            `yaml:"categoriesBlacklist"`
+	LanguagesFilter              []string            `yaml:"languagesFilter"`
+	LanguagesFilterStrict        bool                `yaml:"languagesFilterStrict"`
+	LanguagesBlacklist           []string            `yaml:"languagesBlacklist"`
+	CountriesFilter              []string            `yaml:"countriesFilter"`
+	CountriesFilterStrict        bool                `yaml:"countriesFilterStrict"`
+	CountriesBlacklist           []string            `yaml:"countriesBlacklist"`
+	StatusFilter                 []int               `yaml:"statusFilter"`
+	AvailabilityThreshold        float64             `yaml:"availabilityThreshold"`
+	AvailabilityUpdatedThreshold time.Duration       `yaml:"availabilityUpdatedThreshold"`
 }
 
 // Init returns config instance and false if config at `filePath` already exist.
@@ -127,6 +127,11 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 					return errors.Wrapf(err, "Can not compile regular expression %v in categoryRxToCategoryMap", rx)
 				}
 			}
+			for rx := range playlist.NameRxToCategoriesMap {
+				if _, err := regexp.Compile(rx); err != nil {
+					return errors.Wrapf(err, "Can not compile regular expression %v in nameRxToCategoriesMap", rx)
+				}
+			}
 		}
 		return nil
 	}
@@ -178,6 +183,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                mpegTsTemplate,
 				CategoryRxToCategoryMap:      map[string]string{},
+				NameRxToCategoriesMap:        map[string][]string{},
 				NameRegexpFilter:             regexpsAll,
 				NameRegexpBlacklist:          []*regexp.Regexp{},
 				CategoriesFilter:             []string{},
@@ -198,6 +204,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                hlsTemplate,
 				CategoryRxToCategoryMap:      map[string]string{`(?i)^tv$`: "television", `^$`: "unknown"},
+				NameRxToCategoriesMap:        map[string][]string{},
 				NameRegexpFilter:             regexpsAll,
 				NameRegexpBlacklist:          []*regexp.Regexp{},
 				CategoriesFilter:             []string{"tv", "music", "unknown"},
@@ -218,6 +225,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                httpAceProxyTemplate,
 				CategoryRxToCategoryMap:      map[string]string{},
+				NameRxToCategoriesMap:        map[string][]string{},
 				NameRegexpFilter:             regexpsAll,
 				NameRegexpBlacklist:          regexpsPorn,
 				CategoriesFilter:             []string{},
@@ -265,7 +273,10 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			),
 		},
 		"$.playlists[0].categoryRxToCategoryMap": []*yaml.Comment{
-			yaml.HeadComment("", " Change categories by keys (regular expressions) to values (strings)."),
+			yaml.HeadComment("", " Change categories by category regular expressions (keys) to strings (values)."),
+		},
+		"$.playlists[0].nameRxToCategoriesMap": []*yaml.Comment{
+			yaml.HeadComment("", " Set categories by name regular expressions (keys) to list of strings (values)."),
 		},
 		"$.playlists[0].nameRegexpFilter": []*yaml.Comment{
 			yaml.HeadComment("", " Only keep channels which name matches any of these regular expressions."),

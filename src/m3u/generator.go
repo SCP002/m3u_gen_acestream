@@ -87,6 +87,7 @@ func remap(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist) []acestream.SearchResult {
 	searchResults = remapCategoryToCategory(log, searchResults, playlist)
+	searchResults = remapNameToCategories(log, searchResults, playlist)
 	return searchResults
 }
 
@@ -105,6 +106,24 @@ func remapCategoryToCategory(log *logger.Logger,
 		})
 	}
 	log.InfoFi("Changed", "categories", changed, "by", "category to category map", "playlist", playlist.OutputPath)
+	return searchResults
+}
+
+// remapNameToCategories returns `searchResults` with categories changed to respective map values in `playlist`.
+func remapNameToCategories(log *logger.Logger,
+	searchResults []acestream.SearchResult,
+	playlist config.Playlist) []acestream.SearchResult {
+	var changed int
+	if len(playlist.NameRxToCategoriesMap) > 0 {
+		searchResults = mapAcestreamItems(searchResults, func(item acestream.Item, _ int) acestream.Item {
+			maps.ForEveryMatchingRx(playlist.NameRxToCategoriesMap, item.Name, func(newCategories []string) {
+				item.Categories = newCategories
+				changed += len(newCategories)
+			})
+			return item
+		})
+	}
+	log.InfoFi("Changed", "categories", changed, "by", "name to categories map", "playlist", playlist.OutputPath)
 	return searchResults
 }
 

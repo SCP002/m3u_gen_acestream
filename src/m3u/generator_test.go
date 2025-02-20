@@ -82,6 +82,58 @@ func TestRemapCategoryToCategory(t *testing.T) {
 	}
 }
 
+func TestRemapNameToCategories(t *testing.T) {
+	var consoleBuff bytes.Buffer
+	log := logger.New(logger.DebugLevel, &consoleBuff)
+
+	tests := map[string]TransformTest{
+		"change 3 categories for 2 items": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{
+					{Name: "name 1", Categories: []string{"tv", "movies"}},
+					{Name: "name 2", Categories: []string{"music", "tv"}},
+				}},
+				{Items: []acestream.Item{
+					{Name: "name 3", Categories: []string{"movies", ""}},
+					{Name: "name 4", Categories: []string{}},
+					{Name: ""},
+				}},
+			},
+			playlist: config.Playlist{
+				OutputPath: "file.m3u8",
+				NameRxToCategoriesMap: map[string][]string{
+					"^name 2$": {"category 1", "category 2"},
+					"^name 4$": {"category 3"},
+				},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{
+					{Name: "name 1", Categories: []string{"tv", "movies"}},
+					{Name: "name 2", Categories: []string{"category 1", "category 2"}},
+				}},
+				{Items: []acestream.Item{
+					{Name: "name 3", Categories: []string{"movies", ""}},
+					{Name: "name 4", Categories: []string{"category 3"}},
+					{Name: ""},
+				}},
+			},
+			logLines: []string{
+				timeRx + ` INFO Changed: categories "3", by "name to categories map", playlist "file.m3u8"`,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		actual := remapNameToCategories(log, test.input, test.playlist)
+		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
+		msg := fmt.Sprintf("Bad log output in test '%v'", name)
+		for _, line := range test.logLines {
+			assert.Regexp(t, regexp.MustCompile(line), consoleBuff.String(), msg)
+		}
+		consoleBuff.Reset()
+	}
+}
+
 func TestFilterByStatus(t *testing.T) {
 	var consoleBuff bytes.Buffer
 	log := logger.New(logger.DebugLevel, &consoleBuff)
