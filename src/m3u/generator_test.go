@@ -261,7 +261,7 @@ func TestFilterByCategories(t *testing.T) {
 		},
 		"filter and blacklist are empty": {
 			input: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "name 1", Categories: []string{"movies", "sport"}}}},
+				{Items: []acestream.Item{{Name: "name 1", Categories: []string{"movies", "sport", ""}}}},
 			},
 			playlist: config.Playlist{
 				OutputPath:          "file.m3u8",
@@ -269,7 +269,7 @@ func TestFilterByCategories(t *testing.T) {
 				CategoriesBlacklist: []string{},
 			},
 			expected: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "name 1", Categories: []string{"movies", "sport"}}}},
+				{Items: []acestream.Item{{Name: "name 1", Categories: []string{"movies", "sport", ""}}}},
 			},
 			logLines: []string{timeRx + ` INFO Rejected: sources "0", by "categories", playlist "file.m3u8"`},
 		},
@@ -289,6 +289,32 @@ func TestFilterByCategories(t *testing.T) {
 		"blacklist is empty string, categories have empty string": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", Categories: []string{"eng", "rus", ""}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:          "file.m3u8",
+				CategoriesBlacklist: []string{""},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{}},
+			},
+			logLines: []string{timeRx + ` INFO Rejected: sources "1", by "categories", playlist "file.m3u8"`},
+		},
+		"filter is empty string, categories are empty": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Categories: []string{}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:       "file.m3u8",
+				CategoriesFilter: []string{""},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Categories: []string{}}}},
+			},
+			logLines: []string{timeRx + ` INFO Rejected: sources "0", by "categories", playlist "file.m3u8"`},
+		},
+		"blacklist is empty string, categories are empty": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Categories: []string{}}}},
 			},
 			playlist: config.Playlist{
 				OutputPath:          "file.m3u8",
@@ -466,7 +492,7 @@ func TestFilterByLanguages(t *testing.T) {
 		},
 		"filter and blacklist are empty": {
 			input: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "name 1", Languages: []string{"eng", "rus"}}}},
+				{Items: []acestream.Item{{Name: "name 1", Languages: []string{"eng", "rus", ""}}}},
 			},
 			playlist: config.Playlist{
 				OutputPath:         "file.m3u8",
@@ -474,7 +500,7 @@ func TestFilterByLanguages(t *testing.T) {
 				LanguagesBlacklist: []string{},
 			},
 			expected: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "name 1", Languages: []string{"eng", "rus"}}}},
+				{Items: []acestream.Item{{Name: "name 1", Languages: []string{"eng", "rus", ""}}}},
 			},
 			logLines: []string{timeRx + ` INFO Rejected: sources "0", by "languages", playlist "file.m3u8"`},
 		},
@@ -494,6 +520,32 @@ func TestFilterByLanguages(t *testing.T) {
 		"blacklist is empty string, languages have empty string": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", Languages: []string{"eng", "rus", ""}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:         "file.m3u8",
+				LanguagesBlacklist: []string{""},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{}},
+			},
+			logLines: []string{timeRx + ` INFO Rejected: sources "1", by "languages", playlist "file.m3u8"`},
+		},
+		"filter is empty string, languages are empty": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Languages: []string{}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:      "file.m3u8",
+				LanguagesFilter: []string{""},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Languages: []string{}}}},
+			},
+			logLines: []string{timeRx + ` INFO Rejected: sources "0", by "languages", playlist "file.m3u8"`},
+		},
+		"blacklist is empty string, languages are empty": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Languages: []string{}}}},
 			},
 			playlist: config.Playlist{
 				OutputPath:         "file.m3u8",
@@ -671,7 +723,7 @@ func TestFilterByCountries(t *testing.T) {
 		},
 		"filter and blacklist are empty": {
 			input: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru", ""}}}},
 			},
 			playlist: config.Playlist{
 				OutputPath:         "file.m3u8",
@@ -679,7 +731,7 @@ func TestFilterByCountries(t *testing.T) {
 				CountriesBlacklist: []string{},
 			},
 			expected: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru"}}}},
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru", ""}}}},
 			},
 			logLines: []string{timeRx + ` INFO Rejected: sources "0", by "countries", playlist "file.m3u8"`},
 		},
@@ -699,6 +751,32 @@ func TestFilterByCountries(t *testing.T) {
 		"blacklist is empty string, countries have empty string": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1", Countries: []string{"us", "ru", ""}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:         "file.m3u8",
+				CountriesBlacklist: []string{""},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{}},
+			},
+			logLines: []string{timeRx + ` INFO Rejected: sources "1", by "countries", playlist "file.m3u8"`},
+		},
+		"filter is empty string, countries are empty": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{}}}},
+			},
+			playlist: config.Playlist{
+				OutputPath:      "file.m3u8",
+				CountriesFilter: []string{""},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{}}}},
+			},
+			logLines: []string{timeRx + ` INFO Rejected: sources "0", by "countries", playlist "file.m3u8"`},
+		},
+		"blacklist is empty string, countries are empty": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1", Countries: []string{}}}},
 			},
 			playlist: config.Playlist{
 				OutputPath:         "file.m3u8",

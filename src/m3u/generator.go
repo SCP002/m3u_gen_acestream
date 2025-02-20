@@ -219,6 +219,9 @@ func filterByCategories(log *logger.Logger,
 	prevSources := acestream.GetSourcesAmount(searchResults)
 	if len(playlist.CategoriesFilter) > 0 {
 		searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			if len(item.Categories) == 0 {
+				item.Categories = []string{""}
+			}
 			if playlist.CategoriesFilterStrict {
 				return lo.Every(playlist.CategoriesFilter, item.Categories)
 			} else {
@@ -228,6 +231,9 @@ func filterByCategories(log *logger.Logger,
 	}
 	if len(playlist.CategoriesBlacklist) > 0 {
 		searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			if len(item.Categories) == 0 {
+				item.Categories = []string{""}
+			}
 			return lo.Some(item.Categories, playlist.CategoriesBlacklist)
 		})
 	}
@@ -243,6 +249,9 @@ func filterByLanguages(log *logger.Logger,
 	prevSources := acestream.GetSourcesAmount(searchResults)
 	if len(playlist.LanguagesFilter) > 0 {
 		searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			if len(item.Languages) == 0 {
+				item.Languages = []string{""}
+			}
 			if playlist.LanguagesFilterStrict {
 				return lo.Every(playlist.LanguagesFilter, item.Languages)
 			} else {
@@ -252,6 +261,9 @@ func filterByLanguages(log *logger.Logger,
 	}
 	if len(playlist.LanguagesBlacklist) > 0 {
 		searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			if len(item.Languages) == 0 {
+				item.Languages = []string{""}
+			}
 			return lo.Some(item.Languages, playlist.LanguagesBlacklist)
 		})
 	}
@@ -267,6 +279,9 @@ func filterByCountries(log *logger.Logger,
 	prevSources := acestream.GetSourcesAmount(searchResults)
 	if len(playlist.CountriesFilter) > 0 {
 		searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			if len(item.Countries) == 0 {
+				item.Countries = []string{""}
+			}
 			if playlist.CountriesFilterStrict {
 				return lo.Every(playlist.CountriesFilter, item.Countries)
 			} else {
@@ -276,6 +291,9 @@ func filterByCountries(log *logger.Logger,
 	}
 	if len(playlist.CountriesBlacklist) > 0 {
 		searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+			if len(item.Countries) == 0 {
+				item.Countries = []string{""}
+			}
 			return lo.Some(item.Countries, playlist.CountriesBlacklist)
 		})
 	}
