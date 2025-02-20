@@ -23,6 +23,63 @@ type TransformTest struct {
 
 var timeRx = `[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}`
 
+func TestRemapCategoryToCategory(t *testing.T) {
+	var consoleBuff bytes.Buffer
+	log := logger.New(logger.DebugLevel, &consoleBuff)
+
+	tests := map[string]TransformTest{
+		"change 9 categories for 6 items": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{
+					{Name: "name 1", Categories: []string{"tv", "movies", "music"}},
+					{Name: "name 2", Categories: []string{"music", "tv"}},
+				}},
+				{Items: []acestream.Item{
+					{Name: "name 3", Categories: []string{"movies", ""}},
+					{Name: "name 4", Categories: []string{"music", "documentary"}},
+					{Name: "name 5", Categories: []string{"tv", "tv"}},
+					{Name: "name 6", Categories: []string{""}},
+					{Name: "name 7", Categories: []string{}},
+				}},
+			},
+			playlist: config.Playlist{
+				OutputPath: "file.m3u8",
+				CategoryRxToCategoryMap: map[string]string{
+					"(?i)^tv$":    "television",
+					"(?i)^music$": "audio",
+					"^$":          "unknown",
+				},
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{
+					{Name: "name 1", Categories: []string{"television", "movies", "audio"}},
+					{Name: "name 2", Categories: []string{"audio", "television"}},
+				}},
+				{Items: []acestream.Item{
+					{Name: "name 3", Categories: []string{"movies", "unknown"}},
+					{Name: "name 4", Categories: []string{"audio", "documentary"}},
+					{Name: "name 5", Categories: []string{"television", "television"}},
+					{Name: "name 6", Categories: []string{"unknown"}},
+					{Name: "name 7", Categories: []string{}},
+				}},
+			},
+			logLines: []string{
+				timeRx + ` INFO Changed: categories "9", by "category to category map", playlist "file.m3u8"`,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		actual := remapCategoryToCategory(log, test.input, test.playlist)
+		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
+		msg := fmt.Sprintf("Bad log output in test '%v'", name)
+		for _, line := range test.logLines {
+			assert.Regexp(t, regexp.MustCompile(line), consoleBuff.String(), msg)
+		}
+		consoleBuff.Reset()
+	}
+}
+
 func TestFilterByStatus(t *testing.T) {
 	var consoleBuff bytes.Buffer
 	log := logger.New(logger.DebugLevel, &consoleBuff)

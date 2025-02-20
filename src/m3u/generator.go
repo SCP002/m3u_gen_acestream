@@ -15,6 +15,7 @@ import (
 	"m3u_gen_acestream/acestream"
 	"m3u_gen_acestream/config"
 	"m3u_gen_acestream/util/logger"
+	"m3u_gen_acestream/util/maps"
 )
 
 // Entry represents M3U file entry to execute template on.
@@ -32,7 +33,8 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 	log.Info("Generating M3U files")
 
 	for _, playlist := range cfg.Playlists {
-		searchResults := filter(log, searchResults, playlist)
+		searchResults := remap(log, searchResults, playlist)
+		searchResults = filter(log, searchResults, playlist)
 
 		// Transform []SearchResult to []Entry.
 		entries := lo.FlatMap(searchResults, func(sr acestream.SearchResult, _ int) []Entry {
@@ -78,6 +80,62 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 	}
 
 	return nil
+}
+
+// remap returns `searchResults` with categories and names changed by criterias in `playlist`.
+func remap(log *logger.Logger,
+	searchResults []acestream.SearchResult,
+	playlist config.Playlist) []acestream.SearchResult {
+	searchResults = remapCategoryToCategory(log, searchResults, playlist)
+	return searchResults
+}
+
+// remapCategoryToCategory returns `searchResults` with categories changed to respective map values in `playlist`.
+func remapCategoryToCategory(log *logger.Logger,
+	searchResults []acestream.SearchResult,
+	playlist config.Playlist) []acestream.SearchResult {
+	var changed int
+	if len(playlist.CategoryRxToCategoryMap) > 0 {
+		searchResults = mapAcestreamCategories(searchResults, func(category string, _ int) string {
+			maps.ForEveryMatchingRx(playlist.CategoryRxToCategoryMap, category, func(newCategory string) {
+				category = newCategory
+				changed++
+			})
+			return category
+		})
+	}
+	log.InfoFi("Changed", "categories", changed, "by", "category to category map", "playlist", playlist.OutputPath)
+	return searchResults
+}
+
+// mapAcestreamCategories runs `cb` function for every acestream item category in `searchResults`.
+//
+// `cb` function should return modified acestream category.
+//
+// `cb` function arguments are:
+//   - `category` - acestream category.
+//   - `idx` - category index.
+func mapAcestreamCategories(searchResults []acestream.SearchResult,
+	cb func(category string, idx int) string) []acestream.SearchResult {
+	return mapAcestreamItems(searchResults, func(item acestream.Item, _ int) acestream.Item {
+		item.Categories = lo.Map(item.Categories, cb)
+		return item
+	})
+}
+
+// mapAcestreamItems runs `cb` function for every acestream item in `searchResults`.
+//
+// `cb` function should return modified acestream item.
+//
+// `cb` function arguments are:
+//   - `item` - acestream item.
+//   - `idx` - item index.
+func mapAcestreamItems(searchResults []acestream.SearchResult,
+	cb func(item acestream.Item, idx int) acestream.Item) []acestream.SearchResult {
+	return lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {
+		sr.Items = lo.Map(sr.Items, cb)
+		return sr
+	})
 }
 
 // filter returns filtered `searchResults` by criterias in `playlist`.
@@ -258,7 +316,7 @@ func filterAcestreamItems(searchResults []acestream.SearchResult,
 //
 // `cb` function arguments are:
 //   - `item` - acestream item.
-//   - `idx` - current item index.
+//   - `idx` - item index.
 func rejectAcestreamItems(searchResults []acestream.SearchResult,
 	cb func(item acestream.Item, idx int) bool) []acestream.SearchResult {
 	return lo.Map(searchResults, func(sr acestream.SearchResult, _ int) acestream.SearchResult {

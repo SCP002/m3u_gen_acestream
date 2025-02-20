@@ -29,6 +29,8 @@ type Playlist struct {
 	OutputPath                   string             `yaml:"outputPath"`
 	HeaderTemplate               BlockStr           `yaml:"headerTemplate"`
 	EntryTemplate                *template.Template `yaml:"entryTemplate"`
+	CategoryRxToCategoryMap      map[string]string  `yaml:"categoryRxToCategoryMap"`
+	// TODO: Add name to category mapping
 	NameRegexpFilter             []*regexp.Regexp   `yaml:"nameRegexpFilter"`
 	NameRegexpBlacklist          []*regexp.Regexp   `yaml:"nameRegexpBlacklist"`
 	CategoriesFilter             []string           `yaml:"categoriesFilter"`
@@ -43,9 +45,6 @@ type Playlist struct {
 	StatusFilter                 []int              `yaml:"statusFilter"`
 	AvailabilityThreshold        float64            `yaml:"availabilityThreshold"`
 	AvailabilityUpdatedThreshold time.Duration      `yaml:"availabilityUpdatedThreshold"`
-	// TODO: Add category to category mapping
-	// TODO: Add name to category mapping
-	// TODO: Add name to name mapping
 }
 
 // Init returns config instance and false if config at `filePath` already exist.
@@ -121,6 +120,17 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		return os.WriteFile(filePath, bytes, 0644)
 	}
 
+	validateConfig := func() error {
+		for _, playlist := range cfg.Playlists {
+			for rx := range playlist.CategoryRxToCategoryMap {
+				if _, err := regexp.Compile(rx); err != nil {
+					return errors.Wrapf(err, "Can not compile regular expression %v in categoryRxToCategoryMap", rx)
+				}
+			}
+		}
+		return nil
+	}
+
 	// Read config or create a new if not exist.
 	if err := readConfig(); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -132,6 +142,10 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		} else {
 			return &cfg, false, errors.Wrap(err, "Read config")
 		}
+	}
+
+	if err := validateConfig(); err != nil {
+		return &cfg, false, errors.Wrap(err, "Validate config")
 	}
 
 	return &cfg, false, nil
@@ -163,6 +177,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				OutputPath:                   "./out/playlist_all_mpegts.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                mpegTsTemplate,
+				CategoryRxToCategoryMap:      map[string]string{},
 				NameRegexpFilter:             regexpsAll,
 				NameRegexpBlacklist:          []*regexp.Regexp{},
 				CategoriesFilter:             []string{},
@@ -179,12 +194,13 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
 			},
 			{
-				OutputPath:                   "./out/playlist_tv_and_music_hls.m3u8",
+				OutputPath:                   "./out/playlist_tv_+_music_+_no_category_hls.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                hlsTemplate,
+				CategoryRxToCategoryMap:      map[string]string{`(?i)^tv$`: "television", `^$`: "unknown"},
 				NameRegexpFilter:             regexpsAll,
 				NameRegexpBlacklist:          []*regexp.Regexp{},
-				CategoriesFilter:             []string{"tv", "music"},
+				CategoriesFilter:             []string{"tv", "music", "unknown"},
 				CategoriesFilterStrict:       false,
 				CategoriesBlacklist:          []string{},
 				LanguagesFilter:              []string{},
@@ -201,6 +217,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				OutputPath:                   "./out/playlist_all_but_porn_httpaceproxy.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                httpAceProxyTemplate,
+				CategoryRxToCategoryMap:      map[string]string{},
 				NameRegexpFilter:             regexpsAll,
 				NameRegexpBlacklist:          regexpsPorn,
 				CategoriesFilter:             []string{},
@@ -246,6 +263,9 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" {{.TVGName}}",
 				" {{.IconURL}}",
 			),
+		},
+		"$.playlists[0].categoryRxToCategoryMap": []*yaml.Comment{
+			yaml.HeadComment("", " Change categories by keys (regular expressions) to values (strings)."),
 		},
 		"$.playlists[0].nameRegexpFilter": []*yaml.Comment{
 			yaml.HeadComment("", " Only keep channels which name matches any of these regular expressions."),
@@ -339,7 +359,11 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			yaml.HeadComment("", " Only keep channels which availability was updated that much time ago or sooner."),
 		},
 		"$.playlists[1]": []*yaml.Comment{
-			yaml.HeadComment("", " HLS format, only keep tv and music category."),
+			yaml.HeadComment(
+				"",
+				" HLS format, only keep tv, music and empty category.",
+				" Change category 'tv' to 'television' and empty category to 'unknown'.",
+			),
 		},
 		"$.playlists[2]": []*yaml.Comment{
 			yaml.HeadComment(

@@ -1,0 +1,149 @@
+# Acestream engine address in format of host:port.
+engineAddr: 127.0.0.1:6878
+#
+# Playlists to generate.
+playlists:
+#
+# MPEG-TS format, no filtering by name, category or country.
+- #
+  # Destination filepath to write playlist to.
+  outputPath: ./out/playlist_all_mpegts.m3u8
+  #
+  # Template for the header of M3U file.
+  headerTemplate: |
+    #EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1
+  #
+  # Template for each channel. Available variables are:
+  # {{.Name}}
+  # {{.Infohash}}
+  # {{.Categories}}
+  # {{.EngineAddr}}
+  # {{.TVGName}}
+  # {{.IconURL}}
+  entryTemplate: |
+    #EXTINF:-1 group-title="{{.Categories}}",{{.Name}}
+    http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}
+  #
+  # Change categories by keys (regular expressions) to values (strings).
+  categoryRxToCategoryMap: {}
+  #
+  # Only keep channels which name matches any of these regular expressions.
+  nameRegexpFilter:
+  - .*
+  #
+  # Remove channels which name matches any of these regular expressions.
+  nameRegexpBlacklist: []
+  #
+  # Only keep channels which category equals to any of these.
+  # See https://docs.acestream.net/developers/knowledge-base/list-of-categories/
+  # for known (but not all possible) categories list.
+  # Use empty string to include results with unset category.
+  categoriesFilter: []
+  #
+  # If true, only keep channels with categories that are in filter, but not any other.
+  categoriesFilterStrict: false
+  #
+  # Remove channels which category equals to any of these.
+  # See https://docs.acestream.net/developers/knowledge-base/list-of-categories/
+  # for known (but not all possible) categories list.
+  # Use empty string to exclude results with unset category.
+  categoriesBlacklist: []
+  #
+  # Only keep channels which language equals to any of these.
+  # Languages are 3-character, lower case strings, such as 'eng', 'rus' etc.
+  # Use empty string to include results with unset language.
+  languagesFilter: []
+  #
+  # If true, only keep channels with languages that are in filter, but not any other.
+  languagesFilterStrict: false
+  #
+  # Remove channels which language equals to any of these.
+  # Languages are 3-character, lower case strings, such as 'eng', 'rus' etc.
+  # Use empty string to exclude results with unset language.
+  languagesBlacklist: []
+  #
+  # Only keep channels which country equals to any of these.
+  # Countries are 2-character, lower case strings, such as 'us', 'ru' etc. and 'int' for international.
+  # Use empty string to include results with unset country.
+  countriesFilter: []
+  #
+  # If true, only keep channels with countries that are in filter, but not any other.
+  countriesFilterStrict: false
+  #
+  # Remove channels which country equals to any of these.
+  # Countries are 2-character, lower case strings, such as 'us', 'ru' etc. and 'int' for international.
+  # Use empty string to exclude results with unset country.
+  countriesBlacklist: []
+  #
+  # Only keep channels which status equals to any of these.
+  # Can be 1 (no guaranty that channel is working) or 2 (channel is available).
+  statusFilter:
+  - 2
+  #
+  # Only keep channels which availability equals to or more than this.
+  # Can be between 0.0 (zero availability) and 1.0 (full availability).
+  availabilityThreshold: 0.8
+  #
+  # Only keep channels which availability was updated that much time ago or sooner.
+  availabilityUpdatedThreshold: 192h0m0s
+#
+# HLS format, only keep tv, music and empty category.
+# Change category 'tv' to 'television' and empty category to 'unknown'.
+- outputPath: ./out/playlist_tv_+_music_+_no_category_hls.m3u8
+  headerTemplate: |
+    #EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1
+  entryTemplate: |
+    #EXTINF:-1 group-title="{{.Categories}}",{{.Name}}
+    http://{{.EngineAddr}}/ace/manifest.m3u8?infohash={{.Infohash}}
+  categoryRxToCategoryMap:
+    (?i)^tv$: television
+    ^$: unknown
+  nameRegexpFilter:
+  - .*
+  nameRegexpBlacklist: []
+  categoriesFilter:
+  - tv
+  - music
+  - unknown
+  categoriesFilterStrict: false
+  categoriesBlacklist: []
+  languagesFilter: []
+  languagesFilterStrict: false
+  languagesBlacklist: []
+  countriesFilter: []
+  countriesFilterStrict: false
+  countriesBlacklist: []
+  statusFilter:
+  - 2
+  availabilityThreshold: 0.8
+  availabilityUpdatedThreshold: 192h0m0s
+#
+# https://github.com/pepsik-kiev/HTTPAceProxy format, all but erotic channels.
+- outputPath: ./out/playlist_all_but_porn_httpaceproxy.m3u8
+  headerTemplate: |
+    #EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1
+  entryTemplate: |
+    #EXTINF:-1 group-title="{{.Categories}}",{{.Name}}
+    http://127.0.0.1:8000/ace/getstream?infohash={{.Infohash}}
+  categoryRxToCategoryMap: {}
+  nameRegexpFilter:
+  - .*
+  nameRegexpBlacklist:
+  - (?i).*erotic.*
+  - (?i).*porn.*
+  - (?i).*18\+.*
+  categoriesFilter: []
+  categoriesFilterStrict: false
+  categoriesBlacklist:
+  - erotic_18_plus
+  - 18+
+  languagesFilter: []
+  languagesFilterStrict: false
+  languagesBlacklist: []
+  countriesFilter: []
+  countriesFilterStrict: false
+  countriesBlacklist: []
+  statusFilter:
+  - 2
+  availabilityThreshold: 0.8
+  availabilityUpdatedThreshold: 192h0m0s
