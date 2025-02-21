@@ -31,8 +31,8 @@ type Playlist struct {
 	EntryTemplate                *template.Template  `yaml:"entryTemplate"`
 	CategoryRxToCategoryMap      map[string]string   `yaml:"categoryRxToCategoryMap"`
 	NameRxToCategoriesMap        map[string][]string `yaml:"nameRxToCategoriesMap"`
-	NameRegexpFilter             []*regexp.Regexp    `yaml:"nameRegexpFilter"`
-	NameRegexpBlacklist          []*regexp.Regexp    `yaml:"nameRegexpBlacklist"`
+	NameRxFilter                 []*regexp.Regexp    `yaml:"nameRxFilter"`
+	NameRxBlacklist              []*regexp.Regexp    `yaml:"nameRxBlacklist"`
 	CategoriesFilter             []string            `yaml:"categoriesFilter"`
 	CategoriesFilterStrict       bool                `yaml:"categoriesFilterStrict"`
 	CategoriesBlacklist          []string            `yaml:"categoriesBlacklist"`
@@ -184,8 +184,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				EntryTemplate:                mpegTsTemplate,
 				CategoryRxToCategoryMap:      map[string]string{},
 				NameRxToCategoriesMap:        map[string][]string{},
-				NameRegexpFilter:             regexpsAll,
-				NameRegexpBlacklist:          []*regexp.Regexp{},
+				NameRxFilter:                 regexpsAll,
+				NameRxBlacklist:              []*regexp.Regexp{},
 				CategoriesFilter:             []string{},
 				CategoriesFilterStrict:       false,
 				CategoriesBlacklist:          []string{},
@@ -205,8 +205,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				EntryTemplate:                hlsTemplate,
 				CategoryRxToCategoryMap:      map[string]string{`(?i)^tv$`: "television", `^$`: "unknown"},
 				NameRxToCategoriesMap:        map[string][]string{},
-				NameRegexpFilter:             regexpsAll,
-				NameRegexpBlacklist:          []*regexp.Regexp{},
+				NameRxFilter:                 regexpsAll,
+				NameRxBlacklist:              []*regexp.Regexp{},
 				CategoriesFilter:             []string{"tv", "music", "unknown"},
 				CategoriesFilterStrict:       false,
 				CategoriesBlacklist:          []string{},
@@ -226,8 +226,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				EntryTemplate:                httpAceProxyTemplate,
 				CategoryRxToCategoryMap:      map[string]string{},
 				NameRxToCategoriesMap:        map[string][]string{},
-				NameRegexpFilter:             regexpsAll,
-				NameRegexpBlacklist:          regexpsPorn,
+				NameRxFilter:                 regexpsAll,
+				NameRxBlacklist:              regexpsPorn,
 				CategoriesFilter:             []string{},
 				CategoriesFilterStrict:       false,
 				CategoriesBlacklist:          []string{"erotic_18_plus", "18+"},
@@ -278,10 +278,10 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 		"$.playlists[0].nameRxToCategoriesMap": []*yaml.Comment{
 			yaml.HeadComment("", " Set categories by name regular expressions (keys) to list of strings (values)."),
 		},
-		"$.playlists[0].nameRegexpFilter": []*yaml.Comment{
+		"$.playlists[0].nameRxFilter": []*yaml.Comment{
 			yaml.HeadComment("", " Only keep channels which name matches any of these regular expressions."),
 		},
-		"$.playlists[0].nameRegexpBlacklist": []*yaml.Comment{
+		"$.playlists[0].nameRxBlacklist": []*yaml.Comment{
 			yaml.HeadComment("", " Remove channels which name matches any of these regular expressions."),
 		},
 		"$.playlists[0].categoriesFilter": []*yaml.Comment{

@@ -307,9 +307,9 @@ func filterByName(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist) []acestream.SearchResult {
 	prevSources := acestream.GetSourcesAmount(searchResults)
-	if len(playlist.NameRegexpFilter) > 0 {
+	if len(playlist.NameRxFilter) > 0 {
 		searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
-			return lo.SomeBy(playlist.NameRegexpFilter, func(rx *regexp.Regexp) bool {
+			return lo.SomeBy(playlist.NameRxFilter, func(rx *regexp.Regexp) bool {
 				if rx == nil {
 					return true
 				}
@@ -317,9 +317,9 @@ func filterByName(log *logger.Logger,
 			})
 		})
 	}
-	if len(playlist.NameRegexpBlacklist) > 0 {
+	if len(playlist.NameRxBlacklist) > 0 {
 		searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
-			return lo.SomeBy(playlist.NameRegexpBlacklist, func(rx *regexp.Regexp) bool {
+			return lo.SomeBy(playlist.NameRxBlacklist, func(rx *regexp.Regexp) bool {
 				if rx == nil {
 					return false
 				}
