@@ -164,9 +164,9 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 	entryHlsLink := `http://{{.EngineAddr}}/ace/manifest.m3u8?infohash={{.Infohash}}`
 	entryHttpAceProxyLink := `http://127.0.0.1:8000/infohash/{{.Infohash}}/stream.mp4`
 
-	mpegTsTemplate := template.Must(template.New("mpegTsTemplate").Parse(entryLine1 + "\n" + entryMpegtsLink))
-	hlsTemplate := template.Must(template.New("hlsTemplate").Parse(entryLine1 + "\n" + entryHlsLink))
-	httpAceProxyTemplate := template.Must(template.New("httpAceProxy").Parse(entryLine1 + "\n" + entryHttpAceProxyLink))
+	mpegTsTemplate := template.Must(template.New("").Parse(entryLine1 + "\n" + entryMpegtsLink))
+	hlsTemplate := template.Must(template.New("").Parse(entryLine1 + "\n" + entryHlsLink))
+	httpAceProxyTemplate := template.Must(template.New("").Parse(entryLine1 + "\n" + entryHttpAceProxyLink))
 
 	regexpsAll := []*regexp.Regexp{regexp.MustCompile(`.*`)}
 	regexpsPorn := []*regexp.Regexp{
