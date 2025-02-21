@@ -137,6 +137,9 @@ func remapNameToCategories(log *logger.Logger,
 func mapAcestreamCategories(searchResults []acestream.SearchResult,
 	cb func(category string, idx int) string) []acestream.SearchResult {
 	return mapAcestreamItems(searchResults, func(item acestream.Item, _ int) acestream.Item {
+		if len(item.Categories) == 0 {
+			item.Categories = []string{""}
+		}
 		item.Categories = lo.Map(item.Categories, cb)
 		return item
 	})

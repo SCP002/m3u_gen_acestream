@@ -62,11 +62,11 @@ func TestRemapCategoryToCategory(t *testing.T) {
 					{Name: "name 5", Categories: []string{"audio", "documentary"}},
 					{Name: "name 6", Categories: []string{"television", "television"}},
 					{Name: "name 7", Categories: []string{"unknown"}},
-					{Name: "name 8", Categories: []string{}},
+					{Name: "name 8", Categories: []string{"unknown"}},
 				}},
 			},
 			logLines: []string{
-				timeRx + ` INFO Changed: categories "9", by "category to category map", playlist "file.m3u8"`,
+				timeRx + ` INFO Changed: categories "10", by "category to category map", playlist "file.m3u8"`,
 			},
 		},
 	}
