@@ -3,12 +3,12 @@ package config
 import (
 	"io/fs"
 	"os"
-	"regexp"
 	"strings"
 	"text/template"
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/dlclark/regexp2"
 	"github.com/goccy/go-yaml"
 	"github.com/samber/lo"
 
@@ -31,8 +31,8 @@ type Playlist struct {
 	EntryTemplate                *template.Template  `yaml:"entryTemplate"`
 	CategoryRxToCategoryMap      map[string]string   `yaml:"categoryRxToCategoryMap"`
 	NameRxToCategoriesMap        map[string][]string `yaml:"nameRxToCategoriesMap"`
-	NameRxFilter                 []*regexp.Regexp    `yaml:"nameRxFilter"`
-	NameRxBlacklist              []*regexp.Regexp    `yaml:"nameRxBlacklist"`
+	NameRxFilter                 []*regexp2.Regexp   `yaml:"nameRxFilter"`
+	NameRxBlacklist              []*regexp2.Regexp   `yaml:"nameRxBlacklist"`
 	CategoriesFilter             []string            `yaml:"categoriesFilter"`
 	CategoriesFilterStrict       bool                `yaml:"categoriesFilterStrict"`
 	CategoriesBlacklist          []string            `yaml:"categoriesBlacklist"`
@@ -74,8 +74,8 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		}
 
 		err = yaml.UnmarshalWithOptions(bytes, &cfg,
-			yaml.CustomUnmarshaler(func(t *regexp.Regexp, b []byte) error {
-				rx, err := regexp.Compile(string(b))
+			yaml.CustomUnmarshaler(func(t *regexp2.Regexp, b []byte) error {
+				rx, err := regexp2.Compile(string(b), regexp2.RE2)
 				*t = *rx
 				return err
 			}),
@@ -104,7 +104,7 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		}
 
 		bytes, err := yaml.MarshalWithOptions(defCfg, yaml.WithComment(defCommentMap),
-			yaml.CustomMarshaler(func(t regexp.Regexp) ([]byte, error) {
+			yaml.CustomMarshaler(func(t regexp2.Regexp) ([]byte, error) {
 				return []byte(t.String()), nil
 			}),
 			yaml.CustomMarshaler(func(t template.Template) ([]byte, error) {
@@ -123,12 +123,12 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 	validateConfig := func() error {
 		for _, playlist := range cfg.Playlists {
 			for rx := range playlist.CategoryRxToCategoryMap {
-				if _, err := regexp.Compile(rx); err != nil {
+				if _, err := regexp2.Compile(rx, regexp2.RE2); err != nil {
 					return errors.Wrapf(err, "Can not compile regular expression %v in categoryRxToCategoryMap", rx)
 				}
 			}
 			for rx := range playlist.NameRxToCategoriesMap {
-				if _, err := regexp.Compile(rx); err != nil {
+				if _, err := regexp2.Compile(rx, regexp2.RE2); err != nil {
 					return errors.Wrapf(err, "Can not compile regular expression %v in nameRxToCategoriesMap", rx)
 				}
 			}
@@ -168,11 +168,14 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 	hlsTemplate := template.Must(template.New("").Parse(entryLine1 + "\n" + entryHlsLink))
 	httpAceProxyTemplate := template.Must(template.New("").Parse(entryLine1 + "\n" + entryHttpAceProxyLink))
 
-	regexpsPorn := []*regexp.Regexp{
-		regexp.MustCompile(`(?i).*erotic.*`),
-		regexp.MustCompile(`(?i).*porn.*`),
-		regexp.MustCompile(`(?i).*18\+.*`),
+	regexpsPorn := []*regexp2.Regexp{
+		regexp2.MustCompile(`(?i).*erotic.*`, regexp2.RE2),
+		regexp2.MustCompile(`(?i).*porn.*`, regexp2.RE2),
+		regexp2.MustCompile(`(?i).*18\+.*`, regexp2.RE2),
 	}
+
+	regexpNonDefault := `^(?!.*(informational|entertaining|educational|movies|documentaries|sport|fashion|music|` +
+		`regional|ethnic|religion|teleshop|erotic_18_plus|other_18_plus|cyber_games|amateur|webcam)).*`
 
 	cfg := &Config{
 		EngineAddr: "127.0.0.1:6878",
@@ -181,10 +184,10 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				OutputPath:                   "./out/playlist_alive_mpegts.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                mpegTsTemplate,
-				CategoryRxToCategoryMap:      map[string]string{},
+				CategoryRxToCategoryMap:      map[string]string{regexpNonDefault: "other"},
 				NameRxToCategoriesMap:        map[string][]string{},
-				NameRxFilter:                 []*regexp.Regexp{},
-				NameRxBlacklist:              []*regexp.Regexp{},
+				NameRxFilter:                 []*regexp2.Regexp{},
+				NameRxBlacklist:              []*regexp2.Regexp{},
 				CategoriesFilter:             []string{},
 				CategoriesFilterStrict:       false,
 				CategoriesBlacklist:          []string{},
@@ -204,8 +207,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				EntryTemplate:                hlsTemplate,
 				CategoryRxToCategoryMap:      map[string]string{`(?i)^tv$`: "television", `^$`: "unknown"},
 				NameRxToCategoriesMap:        map[string][]string{},
-				NameRxFilter:                 []*regexp.Regexp{},
-				NameRxBlacklist:              []*regexp.Regexp{},
+				NameRxFilter:                 []*regexp2.Regexp{},
+				NameRxBlacklist:              []*regexp2.Regexp{},
 				CategoriesFilter:             []string{"tv", "music", "unknown"},
 				CategoriesFilterStrict:       false,
 				CategoriesBlacklist:          []string{},
@@ -225,7 +228,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				EntryTemplate:                httpAceProxyTemplate,
 				CategoryRxToCategoryMap:      map[string]string{},
 				NameRxToCategoriesMap:        map[string][]string{},
-				NameRxFilter:                 []*regexp.Regexp{},
+				NameRxFilter:                 []*regexp2.Regexp{},
 				NameRxBlacklist:              regexpsPorn,
 				CategoriesFilter:             []string{},
 				CategoriesFilterStrict:       false,
@@ -251,7 +254,11 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			yaml.HeadComment("", " Playlists to generate."),
 		},
 		"$.playlists[0]": []*yaml.Comment{
-			yaml.HeadComment("", " MPEG-TS format, alive."),
+			yaml.HeadComment(
+				"",
+				" MPEG-TS format, alive.",
+				" Change any non-default category to 'other'.",
+			),
 		},
 		"$.playlists[0].outputPath": []*yaml.Comment{
 			yaml.HeadComment("", " Destination filepath to write playlist to."),
@@ -294,7 +301,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				"   \"^name regexp D$\":",
 				"   - \"will have category E\"",
 				"   - \"and category F\"",
-		),
+			),
 		},
 		"$.playlists[0].nameRxFilter": []*yaml.Comment{
 			yaml.HeadComment(

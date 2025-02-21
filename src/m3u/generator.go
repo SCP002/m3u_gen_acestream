@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 	"time"
 
 	"github.com/cockroachdb/errors"
+	"github.com/dlclark/regexp2"
 	"github.com/samber/lo"
 
 	"m3u_gen_acestream/acestream"
@@ -309,21 +309,23 @@ func filterByName(log *logger.Logger,
 	prevSources := acestream.GetSourcesAmount(searchResults)
 	if len(playlist.NameRxFilter) > 0 {
 		searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
-			return lo.SomeBy(playlist.NameRxFilter, func(rx *regexp.Regexp) bool {
+			return lo.SomeBy(playlist.NameRxFilter, func(rx *regexp2.Regexp) bool {
 				if rx == nil {
 					return true
 				}
-				return rx.MatchString(item.Name)
+				match, _ := rx.MatchString(item.Name)
+				return match
 			})
 		})
 	}
 	if len(playlist.NameRxBlacklist) > 0 {
 		searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
-			return lo.SomeBy(playlist.NameRxBlacklist, func(rx *regexp.Regexp) bool {
+			return lo.SomeBy(playlist.NameRxBlacklist, func(rx *regexp2.Regexp) bool {
 				if rx == nil {
 					return false
 				}
-				return rx.MatchString(item.Name)
+				match, _ := rx.MatchString(item.Name)
+				return match
 			})
 		})
 	}

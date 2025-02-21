@@ -3,10 +3,10 @@ package m3u
 import (
 	"bytes"
 	"fmt"
-	"regexp"
 	"testing"
 	"time"
 
+	"github.com/dlclark/regexp2"
 	"github.com/stretchr/testify/assert"
 
 	"m3u_gen_acestream/acestream"
@@ -76,7 +76,7 @@ func TestRemapCategoryToCategory(t *testing.T) {
 		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
 		msg := fmt.Sprintf("Bad log output in test '%v'", name)
 		for _, line := range test.logLines {
-			assert.Regexp(t, regexp.MustCompile(line), consoleBuff.String(), msg)
+			assert.Regexp(t, regexp2.MustCompile(line, regexp2.RE2), consoleBuff.String(), msg)
 		}
 		consoleBuff.Reset()
 	}
@@ -128,7 +128,7 @@ func TestRemapNameToCategories(t *testing.T) {
 		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
 		msg := fmt.Sprintf("Bad log output in test '%v'", name)
 		for _, line := range test.logLines {
-			assert.Regexp(t, regexp.MustCompile(line), consoleBuff.String(), msg)
+			assert.Regexp(t, regexp2.MustCompile(line, regexp2.RE2), consoleBuff.String(), msg)
 		}
 		consoleBuff.Reset()
 	}
@@ -161,7 +161,7 @@ func TestFilterByStatus(t *testing.T) {
 		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
 		msg := fmt.Sprintf("Bad log output in test '%v'", name)
 		for _, line := range test.logLines {
-			assert.Regexp(t, regexp.MustCompile(line), consoleBuff.String(), msg)
+			assert.Regexp(t, regexp2.MustCompile(line, regexp2.RE2), consoleBuff.String(), msg)
 		}
 		consoleBuff.Reset()
 	}
@@ -194,7 +194,7 @@ func TestFilterByAvailability(t *testing.T) {
 		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
 		msg := fmt.Sprintf("Bad log output in test '%v'", name)
 		for _, line := range test.logLines {
-			assert.Regexp(t, regexp.MustCompile(line), consoleBuff.String(), msg)
+			assert.Regexp(t, regexp2.MustCompile(line, regexp2.RE2), consoleBuff.String(), msg)
 		}
 		consoleBuff.Reset()
 	}
@@ -225,7 +225,9 @@ func TestFilterByAvailabilityUpdateTime(t *testing.T) {
 				{Items: []acestream.Item{{Name: "name 1", AvailabilityUpdatedAt: now - 100}}},
 				{Items: []acestream.Item{}},
 			},
-			logLines: []string{timeRx + ` INFO Rejected: sources "2", by "availability update time", playlist "file.m3u8"`},
+			logLines: []string{
+				timeRx + ` INFO Rejected: sources "2", by "availability update time", playlist "file.m3u8"`,
+			},
 		},
 	}
 
@@ -234,7 +236,7 @@ func TestFilterByAvailabilityUpdateTime(t *testing.T) {
 		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
 		msg := fmt.Sprintf("Bad log output in test '%v'", name)
 		for _, line := range test.logLines {
-			assert.Regexp(t, regexp.MustCompile(line), consoleBuff.String(), msg)
+			assert.Regexp(t, regexp2.MustCompile(line, regexp2.RE2), consoleBuff.String(), msg)
 		}
 		consoleBuff.Reset()
 	}
@@ -465,7 +467,7 @@ func TestFilterByCategories(t *testing.T) {
 		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
 		msg := fmt.Sprintf("Bad log output in test '%v'", name)
 		for _, line := range test.logLines {
-			assert.Regexp(t, regexp.MustCompile(line), consoleBuff.String(), msg)
+			assert.Regexp(t, regexp2.MustCompile(line, regexp2.RE2), consoleBuff.String(), msg)
 		}
 		consoleBuff.Reset()
 	}
@@ -696,7 +698,7 @@ func TestFilterByLanguages(t *testing.T) {
 		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
 		msg := fmt.Sprintf("Bad log output in test '%v'", name)
 		for _, line := range test.logLines {
-			assert.Regexp(t, regexp.MustCompile(line), consoleBuff.String(), msg)
+			assert.Regexp(t, regexp2.MustCompile(line, regexp2.RE2), consoleBuff.String(), msg)
 		}
 		consoleBuff.Reset()
 	}
@@ -926,7 +928,7 @@ func TestFilterByCountries(t *testing.T) {
 		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
 		msg := fmt.Sprintf("Bad log output in test '%v'", name)
 		for _, line := range test.logLines {
-			assert.Regexp(t, regexp.MustCompile(line), consoleBuff.String(), msg)
+			assert.Regexp(t, regexp2.MustCompile(line, regexp2.RE2), consoleBuff.String(), msg)
 		}
 		consoleBuff.Reset()
 	}
@@ -957,8 +959,8 @@ func TestFilterByName(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp.Regexp{},
-				NameRxBlacklist: []*regexp.Regexp{},
+				NameRxFilter:    []*regexp2.Regexp{},
+				NameRxBlacklist: []*regexp2.Regexp{},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1"}}},
@@ -971,8 +973,8 @@ func TestFilterByName(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp.Regexp{nil},
-				NameRxBlacklist: []*regexp.Regexp{nil},
+				NameRxFilter:    []*regexp2.Regexp{nil},
+				NameRxBlacklist: []*regexp2.Regexp{nil},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1"}}},
@@ -985,8 +987,8 @@ func TestFilterByName(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp.Regexp{regexp.MustCompile("")},
-				NameRxBlacklist: []*regexp.Regexp{nil},
+				NameRxFilter:    []*regexp2.Regexp{regexp2.MustCompile("", regexp2.RE2)},
+				NameRxBlacklist: []*regexp2.Regexp{nil},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1"}}},
@@ -999,8 +1001,8 @@ func TestFilterByName(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp.Regexp{nil},
-				NameRxBlacklist: []*regexp.Regexp{regexp.MustCompile("")},
+				NameRxFilter:    []*regexp2.Regexp{nil},
+				NameRxBlacklist: []*regexp2.Regexp{regexp2.MustCompile("", regexp2.RE2)},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{}},
@@ -1014,8 +1016,11 @@ func TestFilterByName(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp.Regexp{regexp.MustCompile(`.*keep1.*`), regexp.MustCompile(`.*keep2.*`)},
-				NameRxBlacklist: []*regexp.Regexp{},
+				NameRxFilter:    []*regexp2.Regexp{
+					regexp2.MustCompile(`.*keep1.*`, regexp2.RE2),
+					regexp2.MustCompile(`.*keep2.*`, regexp2.RE2),
+				},
+				NameRxBlacklist: []*regexp2.Regexp{},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "xxx keep1 xxx"}, {Name: "xxx keep2 xxx"}}},
@@ -1030,8 +1035,11 @@ func TestFilterByName(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp.Regexp{},
-				NameRxBlacklist: []*regexp.Regexp{regexp.MustCompile(`.*skip1.*`), regexp.MustCompile(`.*skip2.*`)},
+				NameRxFilter:    []*regexp2.Regexp{},
+				NameRxBlacklist: []*regexp2.Regexp{
+					regexp2.MustCompile(`.*skip1.*`, regexp2.RE2),
+					regexp2.MustCompile(`.*skip2.*`, regexp2.RE2),
+				},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "xxx keep xxx"}}},
@@ -1046,8 +1054,11 @@ func TestFilterByName(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp.Regexp{regexp.MustCompile(`xxx .* xxx`)},
-				NameRxBlacklist: []*regexp.Regexp{regexp.MustCompile(`.*skip1.*`), regexp.MustCompile(`.*skip2.*`)},
+				NameRxFilter:    []*regexp2.Regexp{regexp2.MustCompile(`xxx .* xxx`, regexp2.RE2)},
+				NameRxBlacklist: []*regexp2.Regexp{
+					regexp2.MustCompile(`.*skip1.*`, regexp2.RE2),
+					regexp2.MustCompile(`.*skip2.*`, regexp2.RE2),
+				},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{}},
@@ -1062,7 +1073,7 @@ func TestFilterByName(t *testing.T) {
 		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
 		msg := fmt.Sprintf("Bad log output in test '%v'", name)
 		for _, line := range test.logLines {
-			assert.Regexp(t, regexp.MustCompile(line), consoleBuff.String(), msg)
+			assert.Regexp(t, regexp2.MustCompile(line, regexp2.RE2), consoleBuff.String(), msg)
 		}
 		consoleBuff.Reset()
 	}
