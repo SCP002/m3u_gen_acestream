@@ -272,16 +272,49 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			),
 		},
 		"$.playlists[0].categoryRxToCategoryMap": []*yaml.Comment{
-			yaml.HeadComment("", " Change categories by category regular expressions (keys) to strings (values)."),
+			yaml.HeadComment(
+				"",
+				" Change categories by category regular expressions (keys) to strings (values).",
+				" Use \"^$\" regular expression to match unset categories.",
+				" Example:",
+				" categoryRxToCategoryMap:",
+				"   \"^category regexp A$\": \"becomes category B\"",
+				"   \"^category regexp C$\": \"becomes category D\"",
+			),
 		},
 		"$.playlists[0].nameRxToCategoriesMap": []*yaml.Comment{
-			yaml.HeadComment("", " Set categories by name regular expressions (keys) to list of strings (values)."),
+			yaml.HeadComment(
+				"",
+				" Set categories by name regular expressions (keys) to list of strings (values).",
+				" Example:",
+				" nameRxToCategoriesMap:",
+				"   \"^name regexp A$\":",
+				"   - \"will have category B\"",
+				"   - \"and category C\"",
+				"   \"^name regexp D$\":",
+				"   - \"will have category E\"",
+				"   - \"and category F\"",
+		),
 		},
 		"$.playlists[0].nameRxFilter": []*yaml.Comment{
-			yaml.HeadComment("", " Only keep channels which name matches any of these regular expressions."),
+			yaml.HeadComment(
+				"",
+				" Only keep channels which name matches any of these regular expressions.",
+				" Example:",
+				" nameRxFilter:",
+				"   - \".*keep channels matching name A.*\"",
+				"   - \".*keep channels matching name B.*\"",
+			),
 		},
 		"$.playlists[0].nameRxBlacklist": []*yaml.Comment{
-			yaml.HeadComment("", " Remove channels which name matches any of these regular expressions."),
+			yaml.HeadComment(
+				"",
+				" Remove channels which name matches any of these regular expressions.",
+				" Example:",
+				" nameRxBlacklist:",
+				"   - \".*remove channels matching name A.*\"",
+				"   - \".*remove channels matching name B.*\"",
+			),
 		},
 		"$.playlists[0].categoriesFilter": []*yaml.Comment{
 			yaml.HeadComment(
@@ -290,6 +323,10 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/",
 				" for known (but not all possible) categories list.",
 				" Use empty string to include results with unset category.",
+				" Example:",
+				" categoriesFilter:",
+				"   - \"keep channels with category A\"",
+				"   - \"keep channels with category B\"",
 			),
 		},
 		"$.playlists[0].categoriesFilterStrict": []*yaml.Comment{
@@ -305,6 +342,10 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" See https://docs.acestream.net/developers/knowledge-base/list-of-categories/",
 				" for known (but not all possible) categories list.",
 				" Use empty string to exclude results with unset category.",
+				" Example:",
+				" categoriesBlacklist:",
+				"   - \"remove channels with category A\"",
+				"   - \"remove channels with category B\"",
 			),
 		},
 		"$.playlists[0].languagesFilter": []*yaml.Comment{
@@ -313,6 +354,10 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" Only keep channels which language equals to any of these.",
 				" Languages are 3-character, lower case strings, such as 'eng', 'rus' etc.",
 				" Use empty string to include results with unset language.",
+				" Example:",
+				" languagesFilter:",
+				"   - \"keep channels with language A\"",
+				"   - \"keep channels with language B\"",
 			),
 		},
 		"$.playlists[0].languagesFilterStrict": []*yaml.Comment{
@@ -327,6 +372,10 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" Remove channels which language equals to any of these.",
 				" Languages are 3-character, lower case strings, such as 'eng', 'rus' etc.",
 				" Use empty string to exclude results with unset language.",
+				" Example:",
+				" languagesBlacklist:",
+				"   - \"remove channels with language A\"",
+				"   - \"remove channels with language B\"",
 			),
 		},
 		"$.playlists[0].countriesFilter": []*yaml.Comment{
@@ -335,6 +384,10 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" Only keep channels which country equals to any of these.",
 				" Countries are 2-character, lower case strings, such as 'us', 'ru' etc. and 'int' for international.",
 				" Use empty string to include results with unset country.",
+				" Example:",
+				" countriesFilter:",
+				"   - \"keep channels with country A\"",
+				"   - \"keep channels with country B\"",
 			),
 		},
 		"$.playlists[0].countriesFilterStrict": []*yaml.Comment{
@@ -349,6 +402,10 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" Remove channels which country equals to any of these.",
 				" Countries are 2-character, lower case strings, such as 'us', 'ru' etc. and 'int' for international.",
 				" Use empty string to exclude results with unset country.",
+				" Example:",
+				" countriesBlacklist:",
+				"   - \"remove channels with country A\"",
+				"   - \"remove channels with country B\"",
 			),
 		},
 		"$.playlists[0].statusFilter": []*yaml.Comment{
@@ -356,6 +413,10 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				"",
 				" Only keep channels which status equals to any of these.",
 				" Can be 1 (no guaranty that channel is working) or 2 (channel is available).",
+				" Example:",
+				" statusFilter:",
+				"   - 1",
+				"   - 2",
 			),
 		},
 		"$.playlists[0].availabilityThreshold": []*yaml.Comment{
@@ -363,10 +424,15 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				"",
 				" Only keep channels which availability equals to or more than this.",
 				" Can be between 0.0 (zero availability) and 1.0 (full availability).",
+				" The lower this value is, the less channels gets removed.",
 			),
 		},
 		"$.playlists[0].availabilityUpdatedThreshold": []*yaml.Comment{
-			yaml.HeadComment("", " Only keep channels which availability was updated that much time ago or sooner."),
+			yaml.HeadComment(
+				"",
+				" Only keep channels which availability was updated that much time ago or sooner.",
+				" The lower this value is, the more channels gets removed.",
+			),
 		},
 		"$.playlists[1]": []*yaml.Comment{
 			yaml.HeadComment(
