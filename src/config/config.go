@@ -168,7 +168,6 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 	hlsTemplate := template.Must(template.New("").Parse(entryLine1 + "\n" + entryHlsLink))
 	httpAceProxyTemplate := template.Must(template.New("").Parse(entryLine1 + "\n" + entryHttpAceProxyLink))
 
-	regexpsAll := []*regexp.Regexp{regexp.MustCompile(`.*`)}
 	regexpsPorn := []*regexp.Regexp{
 		regexp.MustCompile(`(?i).*erotic.*`),
 		regexp.MustCompile(`(?i).*porn.*`),
@@ -179,12 +178,12 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 		EngineAddr: "127.0.0.1:6878",
 		Playlists: []Playlist{
 			{
-				OutputPath:                   "./out/playlist_all_mpegts.m3u8",
+				OutputPath:                   "./out/playlist_alive_mpegts.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                mpegTsTemplate,
 				CategoryRxToCategoryMap:      map[string]string{},
 				NameRxToCategoriesMap:        map[string][]string{},
-				NameRxFilter:                 regexpsAll,
+				NameRxFilter:                 []*regexp.Regexp{},
 				NameRxBlacklist:              []*regexp.Regexp{},
 				CategoriesFilter:             []string{},
 				CategoriesFilterStrict:       false,
@@ -200,12 +199,12 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
 			},
 			{
-				OutputPath:                   "./out/playlist_tv_+_music_+_no_category_hls.m3u8",
+				OutputPath:                   "./out/playlist_alive_hls_tv_+_music_+_no_category.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                hlsTemplate,
 				CategoryRxToCategoryMap:      map[string]string{`(?i)^tv$`: "television", `^$`: "unknown"},
 				NameRxToCategoriesMap:        map[string][]string{},
-				NameRxFilter:                 regexpsAll,
+				NameRxFilter:                 []*regexp.Regexp{},
 				NameRxBlacklist:              []*regexp.Regexp{},
 				CategoriesFilter:             []string{"tv", "music", "unknown"},
 				CategoriesFilterStrict:       false,
@@ -221,12 +220,12 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
 			},
 			{
-				OutputPath:                   "./out/playlist_all_but_porn_httpaceproxy.m3u8",
+				OutputPath:                   "./out/playlist_alive_httpaceproxy_all_but_porn.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                httpAceProxyTemplate,
 				CategoryRxToCategoryMap:      map[string]string{},
 				NameRxToCategoriesMap:        map[string][]string{},
-				NameRxFilter:                 regexpsAll,
+				NameRxFilter:                 []*regexp.Regexp{},
 				NameRxBlacklist:              regexpsPorn,
 				CategoriesFilter:             []string{},
 				CategoriesFilterStrict:       false,
@@ -252,7 +251,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			yaml.HeadComment("", " Playlists to generate."),
 		},
 		"$.playlists[0]": []*yaml.Comment{
-			yaml.HeadComment("", " MPEG-TS format, no filtering by name, category or country."),
+			yaml.HeadComment("", " MPEG-TS format, alive."),
 		},
 		"$.playlists[0].outputPath": []*yaml.Comment{
 			yaml.HeadComment("", " Destination filepath to write playlist to."),
@@ -372,14 +371,14 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 		"$.playlists[1]": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
-				" HLS format, only keep tv, music and empty category.",
+				" HLS format, alive, only keep tv, music and empty category.",
 				" Change category 'tv' to 'television' and empty category to 'unknown'.",
 			),
 		},
 		"$.playlists[2]": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
-				" https://github.com/pepsik-kiev/HTTPAceProxy format, all but erotic channels.",
+				" https://github.com/pepsik-kiev/HTTPAceProxy format, alive, all but erotic channels.",
 			),
 		},
 	}
