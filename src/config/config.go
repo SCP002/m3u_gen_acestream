@@ -198,8 +198,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				CountriesFilterStrict:        false,
 				CountriesBlacklist:           []string{},
 				StatusFilter:                 []int{2},
-				AvailabilityThreshold:        0.8,
-				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
+				AvailabilityThreshold:        1.0,
+				AvailabilityUpdatedThreshold: time.Hour * 12 * 3,
 			},
 			{
 				OutputPath:                   "./out/playlist_alive_hls_tv_+_music_+_no_category.m3u8",
@@ -219,8 +219,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				CountriesFilterStrict:        false,
 				CountriesBlacklist:           []string{},
 				StatusFilter:                 []int{2},
-				AvailabilityThreshold:        0.8,
-				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
+				AvailabilityThreshold:        1.0,
+				AvailabilityUpdatedThreshold: time.Hour * 12 * 3,
 			},
 			{
 				OutputPath:                   "./out/playlist_alive_httpaceproxy_all_but_porn.m3u8",
@@ -240,8 +240,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				CountriesFilterStrict:        false,
 				CountriesBlacklist:           []string{},
 				StatusFilter:                 []int{2},
-				AvailabilityThreshold:        0.8,
-				AvailabilityUpdatedThreshold: time.Hour * 24 * 8,
+				AvailabilityThreshold:        1.0,
+				AvailabilityUpdatedThreshold: time.Hour * 12 * 3,
 			},
 		},
 	}
