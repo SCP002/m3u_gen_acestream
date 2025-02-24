@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/adampresley/sigint"
 	"github.com/cockroachdb/errors"
@@ -58,7 +59,9 @@ func main() {
 		os.Exit(0)
 	}
 
-	httpClient := &http.Client{}
+	httpClient := &http.Client{
+		Timeout: time.Second * 5,
+	}
 	engine := acestream.NewEngine(log, httpClient, cfg.EngineAddr)
 	engine.WaitForConnection(context.Background())
 

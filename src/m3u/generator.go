@@ -23,6 +23,8 @@ type Entry struct {
 	Name       string
 	Infohash   string
 	Categories string
+	Countries  string
+	Languages  string
 	EngineAddr string
 	TVGName    string
 	IconURL    string
@@ -45,11 +47,22 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 				categories := lo.Compact(lo.Uniq(lo.Map(item.Categories, func(category string, _ int) string {
 					return strings.ToLower(category)
 				})))
+				countries := lo.Compact(lo.Uniq(lo.Map(item.Countries, func(country string, _ int) string {
+					return strings.ToLower(country)
+				})))
+				languages := lo.Compact(lo.Uniq(lo.Map(item.Languages, func(language string, _ int) string {
+					return strings.ToLower(language)
+				})))
 				slices.Sort(categories)
+				slices.Sort(countries)
+				slices.Sort(languages)
+
 				return Entry{
 					Name:       item.Name,
 					Infohash:   item.Infohash,
 					Categories: strings.Join(categories, ";"),
+					Countries:  strings.Join(countries, ";"),
+					Languages:  strings.Join(languages, ";"),
 					EngineAddr: cfg.EngineAddr,
 					TVGName:    strings.ReplaceAll(item.Name, " ", "_"),
 					IconURL:    lo.FirstOr(iconURLs, ""),

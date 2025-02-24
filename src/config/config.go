@@ -273,6 +273,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" {{.Name}}",
 				" {{.Infohash}}",
 				" {{.Categories}}",
+				" {{.Countries}}",
+				" {{.Languages}}",
 				" {{.EngineAddr}}",
 				" {{.TVGName}}",
 				" {{.IconURL}}",
