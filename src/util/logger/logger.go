@@ -65,34 +65,34 @@ func New(lvl Level, consoleWriter io.Writer) *Logger {
 	return &Logger{Logger: &log, writer: &writer}
 }
 
-// Trace prints trace level `msg` with caller.
+// Trace prints trace level `msg`.
 func (l Logger) Trace(msg any) {
-	l.Logger.Trace().Caller(2).Msg(fmt.Sprint(msg))
+	l.Logger.Trace().Msg(fmt.Sprint(msg))
 }
 
 // Tracef prints trace level message from `args` in given `format`.
 func (l Logger) Tracef(format string, args ...any) {
-	l.Logger.Trace().Caller(2).Msgf(format, args...)
+	l.Logger.Trace().Msgf(format, args...)
 }
 
-// TraceFi prints trace level `msg` with caller and formatted and colored `fields`.
+// TraceFi prints trace level `msg` with formatted and colored `fields`.
 func (l Logger) TraceFi(msg string, fields ...any) {
-	print(l.Logger.Trace().Caller(2), msg, fields)
+	print(l.Logger.Trace(), msg, fields)
 }
 
-// Debug prints debug level `msg` with caller.
+// Debug prints debug level `msg`.
 func (l Logger) Debug(msg any) {
-	l.Logger.Debug().Caller(2).Msg(fmt.Sprint(msg))
+	l.Logger.Debug().Msg(fmt.Sprint(msg))
 }
 
 // Debugf prints debug level message from `args` in given `format`.
 func (l Logger) Debugf(format string, args ...any) {
-	l.Logger.Debug().Caller(2).Msgf(format, args...)
+	l.Logger.Debug().Msgf(format, args...)
 }
 
-// DebugFi prints debug level `msg` with caller and formatted and colored `fields`.
+// DebugFi prints debug level `msg` with formatted and colored `fields`.
 func (l Logger) DebugFi(msg string, fields ...any) {
-	print(l.Logger.Debug().Caller(2), msg, fields)
+	print(l.Logger.Debug(), msg, fields)
 }
 
 // Info prints info level `msg`.

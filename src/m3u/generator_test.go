@@ -66,6 +66,7 @@ func TestRemapCategoryToCategory(t *testing.T) {
 				}},
 			},
 			logLines: []string{
+				timeRx + ` DEBUG Changed: category "tv", to "television", playlist "file.m3u8"`,
 				timeRx + ` INFO Changed: categories "10", by "category to category map", playlist "file.m3u8"`,
 			},
 		},
@@ -118,6 +119,8 @@ func TestRemapNameToCategories(t *testing.T) {
 				}},
 			},
 			logLines: []string{
+				timeRx + ` DEBUG Changed: categories "\["music","tv"\]", to ` +
+					`"\["category 1","category 2"\]", by name "name 2", playlist "file.m3u8"`,
 				timeRx + ` INFO Changed: categories "3", by "name to categories map", playlist "file.m3u8"`,
 			},
 		},
@@ -152,7 +155,10 @@ func TestFilterByStatus(t *testing.T) {
 				{Items: []acestream.Item{{Name: "name 1", Status: 2}}},
 				{Items: []acestream.Item{{Name: "name 3", Status: 1}}},
 			},
-			logLines: []string{timeRx + ` INFO Rejected: sources "2", by "status", playlist "file.m3u8"`},
+			logLines: []string{
+				timeRx + ` DEBUG Rejected: name "name 2", status "3", playlist "file.m3u8"`,
+				timeRx + ` INFO Rejected: sources "2", by "status", playlist "file.m3u8"`,
+			},
 		},
 	}
 
@@ -185,7 +191,10 @@ func TestFilterByAvailability(t *testing.T) {
 				{Items: []acestream.Item{{Name: "name 1", Availability: 1.0}, {Name: "name 2", Availability: 0.8}}},
 				{Items: []acestream.Item{}},
 			},
-			logLines: []string{timeRx + ` INFO Rejected: sources "2", by "availability", playlist "file.m3u8"`},
+			logLines: []string{
+				timeRx + ` DEBUG Rejected: name "name 3", availability "0.5", playlist "file.m3u8"`,
+				timeRx + ` INFO Rejected: sources "2", by "availability", playlist "file.m3u8"`,
+			},
 		},
 	}
 
@@ -226,6 +235,8 @@ func TestFilterByAvailabilityUpdateTime(t *testing.T) {
 				{Items: []acestream.Item{}},
 			},
 			logLines: []string{
+				timeRx + ` DEBUG Rejected: name "name 2", availability updated at "` +
+					fmt.Sprint(now-300) + `", playlist "file.m3u8"`,
 				timeRx + ` INFO Rejected: sources "2", by "availability update time", playlist "file.m3u8"`,
 			},
 		},
@@ -458,7 +469,11 @@ func TestFilterByCategories(t *testing.T) {
 					{Name: "name 3", Categories: []string{"regional"}},
 				}},
 			},
-			logLines: []string{timeRx + ` INFO Rejected: sources "2", by "categories", playlist "file.m3u8"`},
+			logLines: []string{
+				timeRx + ` DEBUG Rejected: name "name 4", ` +
+					`categories "\["sport","documentaries"\]", playlist "file.m3u8"`,
+				timeRx + ` INFO Rejected: sources "2", by "categories", playlist "file.m3u8"`,
+			},
 		},
 	}
 
@@ -689,7 +704,10 @@ func TestFilterByLanguages(t *testing.T) {
 					{Name: "name 3", Languages: []string{"kaz"}},
 				}},
 			},
-			logLines: []string{timeRx + ` INFO Rejected: sources "2", by "languages", playlist "file.m3u8"`},
+			logLines: []string{
+				timeRx + ` DEBUG Rejected: name "name 4", languages "\["rus","ron"\]", playlist "file.m3u8"`,
+				timeRx + ` INFO Rejected: sources "2", by "languages", playlist "file.m3u8"`,
+			},
 		},
 	}
 
@@ -919,7 +937,10 @@ func TestFilterByCountries(t *testing.T) {
 				}},
 				{Items: []acestream.Item{}},
 			},
-			logLines: []string{timeRx + ` INFO Rejected: sources "2", by "countries", playlist "file.m3u8"`},
+			logLines: []string{
+				timeRx + ` DEBUG Rejected: name "name 4", countries "\["ru","md"\]", playlist "file.m3u8"`,
+				timeRx + ` INFO Rejected: sources "2", by "countries", playlist "file.m3u8"`,
+			},
 		},
 	}
 
@@ -1015,8 +1036,8 @@ func TestFilterByName(t *testing.T) {
 				{Items: []acestream.Item{{Name: "xxx keep1 xxx"}, {Name: "xxx keep2 xxx"}, {Name: "xxx skip xxx"}}},
 			},
 			playlist: config.Playlist{
-				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp2.Regexp{
+				OutputPath: "file.m3u8",
+				NameRxFilter: []*regexp2.Regexp{
 					regexp2.MustCompile(`.*keep1.*`, regexp2.RE2),
 					regexp2.MustCompile(`.*keep2.*`, regexp2.RE2),
 				},
@@ -1034,8 +1055,8 @@ func TestFilterByName(t *testing.T) {
 				{Items: []acestream.Item{{Name: "xxx skip1 xxx"}, {Name: "xxx skip2 xxx"}, {Name: "xxx keep xxx"}}},
 			},
 			playlist: config.Playlist{
-				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp2.Regexp{},
+				OutputPath:   "file.m3u8",
+				NameRxFilter: []*regexp2.Regexp{},
 				NameRxBlacklist: []*regexp2.Regexp{
 					regexp2.MustCompile(`.*skip1.*`, regexp2.RE2),
 					regexp2.MustCompile(`.*skip2.*`, regexp2.RE2),
@@ -1053,8 +1074,8 @@ func TestFilterByName(t *testing.T) {
 				{Items: []acestream.Item{{Name: "xxx skip1 xxx"}, {Name: "xxx skip2 xxx"}, {Name: "xxx keep xxx"}}},
 			},
 			playlist: config.Playlist{
-				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp2.Regexp{regexp2.MustCompile(`xxx .* xxx`, regexp2.RE2)},
+				OutputPath:   "file.m3u8",
+				NameRxFilter: []*regexp2.Regexp{regexp2.MustCompile(`xxx .* xxx`, regexp2.RE2)},
 				NameRxBlacklist: []*regexp2.Regexp{
 					regexp2.MustCompile(`.*skip1.*`, regexp2.RE2),
 					regexp2.MustCompile(`.*skip2.*`, regexp2.RE2),
@@ -1064,7 +1085,10 @@ func TestFilterByName(t *testing.T) {
 				{Items: []acestream.Item{}},
 				{Items: []acestream.Item{{Name: "xxx keep xxx"}}},
 			},
-			logLines: []string{timeRx + ` INFO Rejected: sources "5", by "name", playlist "file.m3u8"`},
+			logLines: []string{
+				timeRx + ` DEBUG Rejected: name "xxx skip1 xxx", playlist "file.m3u8"`,
+				timeRx + ` INFO Rejected: sources "5", by "name", playlist "file.m3u8"`,
+			},
 		},
 	}
 
