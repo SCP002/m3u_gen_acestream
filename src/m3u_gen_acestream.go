@@ -15,15 +15,18 @@ import (
 	"m3u_gen_acestream/cli"
 	"m3u_gen_acestream/config"
 	"m3u_gen_acestream/m3u"
+	"m3u_gen_acestream/updater"
 	"m3u_gen_acestream/util/logger"
 )
 
 func main() {
 	log := logger.New(logger.FatalLevel, os.Stderr)
 
+	programVersion := "v2.0.0"
+
 	flags, err := cli.Parse()
 	if flags.Version {
-		fmt.Println("v2.0.0")
+		fmt.Println(programVersion)
 		os.Exit(0)
 	}
 	if cli.IsErrOfType(err, goFlags.ErrHelp) {
@@ -48,6 +51,17 @@ func main() {
 		os.Exit(0)
 	})
 
+	if flags.Update {
+		updaterHttpClient := &http.Client{
+			Timeout: time.Second * 5,
+		}
+		updater := updater.New(log, updaterHttpClient)
+
+		if err := updater.Update(programVersion); err != nil {
+			log.Fatal(errors.Wrap(err, "Self update failed"))
+		}
+	}
+
 	log.Info("Starting")
 
 	cfg, isNewCfg, err := config.Init(log, flags.CfgPath)
@@ -59,10 +73,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	httpClient := &http.Client{
+	engineHttpClient := &http.Client{
 		Timeout: time.Second * 5,
 	}
-	engine := acestream.NewEngine(log, httpClient, cfg.EngineAddr)
+	engine := acestream.NewEngine(log, engineHttpClient, cfg.EngineAddr)
 	engine.WaitForConnection(context.Background())
 
 	results, err := engine.SearchAll(context.Background())

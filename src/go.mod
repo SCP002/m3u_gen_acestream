@@ -7,6 +7,7 @@ require (
 	github.com/cockroachdb/errors v1.11.3
 	github.com/dlclark/regexp2 v1.11.5
 	github.com/fatih/color v1.18.0
+	github.com/fynelabs/selfupdate v0.2.0
 	github.com/goccy/go-json v0.10.4
 	github.com/goccy/go-yaml v1.15.15
 	github.com/jessevdk/go-flags v1.6.1

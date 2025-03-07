@@ -9,6 +9,7 @@ import (
 // Flags represents command line flags.
 type Flags struct {
 	Version  bool       `short:"v" long:"version" description:"Print the program version"`
+	Update   bool       `short:"u" long:"update" description:"Check for updates and update"`
 	LogLevel pLog.Level `short:"l" long:"logLevel" description:"Logging level. Can be from 1 (most verbose) to 7 (least verbose)"`
 	LogFile  string     `short:"f" long:"logFile" description:"Log file. If set, writes structured log to a file at the specified path"`
 	CfgPath  string     `short:"c" long:"cfgPath" description:"Config file path to read from or initialize a default"`
