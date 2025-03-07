@@ -44,3 +44,6 @@ for os in "${os_list[@]}"; do
         fi
     done
 done
+
+go env -u GOOS
+go env -u GOARCH
