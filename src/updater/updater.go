@@ -102,6 +102,9 @@ func (u Updater) getLatestRelease() (Release, error) {
 	if err != nil {
 		return Release{}, errors.Wrap(err, "Decode response body as JSON")
 	}
+	if release.TagName == "" {
+		return Release{}, errors.New("Release tag name is empty")
+	}
 	return release, nil
 }
 
