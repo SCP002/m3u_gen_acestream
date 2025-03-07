@@ -17,7 +17,7 @@ import (
 
 // Updater represents update handler for this program.
 type Updater struct {
-	log *logger.Logger
+	log        *logger.Logger
 	httpClient *http.Client
 }
 
