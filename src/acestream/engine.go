@@ -15,7 +15,7 @@ import (
 	"m3u_gen_acestream/util/logger"
 )
 
-// Engine respresents handler for AceStream engine to interract with it using REST API.
+// Engine respresents handler for Ace Stream Engine to interract with it using REST API.
 type Engine struct {
 	log        *logger.Logger
 	httpClient *http.Client
@@ -147,7 +147,7 @@ func (e Engine) WaitForConnection(ctx context.Context) {
 	}
 }
 
-// SearchAll returns all currently available acestream channels.
+// SearchAll returns all currently available ace stream channels.
 func (e Engine) SearchAll(ctx context.Context) ([]SearchResult, error) {
 	e.log.Info("Searching for channels")
 	results := []SearchResult{}
@@ -163,7 +163,7 @@ func (e Engine) SearchAll(ctx context.Context) ([]SearchResult, error) {
 	}
 }
 
-// searchAtPage returns acestream channels at page `page` with maximum page size.
+// searchAtPage returns ace stream channels at page `page` with page size defined in engine instance.
 func (e Engine) searchAtPage(ctx context.Context, page int) ([]SearchResult, error) {
 	query := fmt.Sprintf("page_size=%v&page=%v", e.pageSize, page)
 	url := url.URL{Scheme: "http", Host: e.addr, Path: "search", RawQuery: query}

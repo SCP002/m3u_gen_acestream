@@ -9,6 +9,10 @@
 It fetches available channels from ace stream engine using API, filters and transforms them and writes
 M3U playlists using templates defined in config.
 
+## Requirements
+
+[Ace Stream](https://docs.acestream.net/products/) running locally or remotely.
+
 ## Command line flags
 
 | Command argument     | Description                                                                               |
@@ -30,7 +34,7 @@ See [releases page](https://github.com/SCP002/m3u_gen_acestream/releases)
 ## Default config
 
 ```yaml
-# Acestream engine address in format of host:port.
+# Ace Stream Engine address in format of host:port.
 engineAddr: 127.0.0.1:6878
 #
 # Playlists to generate.

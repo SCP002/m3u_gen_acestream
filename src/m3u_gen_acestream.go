@@ -81,7 +81,7 @@ func main() {
 
 	results, err := engine.SearchAll(context.Background())
 	if err != nil {
-		log.Error(errors.Wrap(err, "Search for available acestream channels"))
+		log.Error(errors.Wrap(err, "Search for available ace stream channels"))
 	}
 
 	if err := m3u.Generate(log, results, cfg); err != nil {

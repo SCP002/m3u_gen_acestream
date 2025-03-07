@@ -144,12 +144,12 @@ func remapNameToCategories(log *logger.Logger,
 	return searchResults
 }
 
-// mapAcestreamCategories runs `cb` function for every acestream item category in `searchResults`.
+// mapAcestreamCategories runs `cb` function for every ace stream item category in `searchResults`.
 //
-// `cb` function should return modified acestream category.
+// `cb` function should return modified ace stream category.
 //
 // `cb` function arguments are:
-//   - `category` - acestream category.
+//   - `category` - ace stream category.
 //   - `idx` - category index.
 func mapAcestreamCategories(searchResults []acestream.SearchResult,
 	cb func(category string, idx int) string) []acestream.SearchResult {
@@ -162,12 +162,12 @@ func mapAcestreamCategories(searchResults []acestream.SearchResult,
 	})
 }
 
-// mapAcestreamItems runs `cb` function for every acestream item in `searchResults`.
+// mapAcestreamItems runs `cb` function for every ace stream item in `searchResults`.
 //
-// `cb` function should return modified acestream item.
+// `cb` function should return modified ace stream item.
 //
 // `cb` function arguments are:
-//   - `item` - acestream item.
+//   - `item` - ace stream item.
 //   - `idx` - item index.
 func mapAcestreamItems(searchResults []acestream.SearchResult,
 	cb func(item acestream.Item, idx int) acestream.Item) []acestream.SearchResult {
@@ -407,12 +407,12 @@ func filterByName(log *logger.Logger,
 	return searchResults
 }
 
-// filterAcestreamItems runs `cb` function for every acestream item in `searchResults`.
+// filterAcestreamItems runs `cb` function for every ace stream item in `searchResults`.
 //
 // `cb` function should return 'true' if item should stay in `searchResults`.
 //
 // `cb` function arguments are:
-//   - `item` - acestream item.
+//   - `item` - ace stream item.
 //   - `idx` - current item index.
 func filterAcestreamItems(searchResults []acestream.SearchResult,
 	cb func(item acestream.Item, idx int) bool) []acestream.SearchResult {
@@ -422,12 +422,12 @@ func filterAcestreamItems(searchResults []acestream.SearchResult,
 	})
 }
 
-// rejectAcestreamItems runs `cb` function for every acestream item in `searchResults`.
+// rejectAcestreamItems runs `cb` function for every ace stream item in `searchResults`.
 //
 // `cb` function should return 'true' if item should be removed from `searchResults`.
 //
 // `cb` function arguments are:
-//   - `item` - acestream item.
+//   - `item` - ace stream item.
 //   - `idx` - item index.
 func rejectAcestreamItems(searchResults []acestream.SearchResult,
 	cb func(item acestream.Item, idx int) bool) []acestream.SearchResult {

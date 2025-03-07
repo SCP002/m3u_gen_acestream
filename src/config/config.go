@@ -248,7 +248,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 
 	commentMap := yaml.CommentMap{
 		"$.engineAddr": []*yaml.Comment{
-			yaml.HeadComment(" Acestream engine address in format of host:port."),
+			yaml.HeadComment(" Ace Stream Engine address in format of host:port."),
 		},
 		"$.playlists": []*yaml.Comment{
 			yaml.HeadComment("", " Playlists to generate."),
