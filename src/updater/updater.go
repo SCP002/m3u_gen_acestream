@@ -3,7 +3,6 @@ package updater
 import (
 	"fmt"
 	"io"
-	"m3u_gen_acestream/util/logger"
 	"net/http"
 	"os"
 	"runtime"
@@ -12,6 +11,8 @@ import (
 	"github.com/fynelabs/selfupdate"
 	"github.com/goccy/go-json"
 	"github.com/samber/lo"
+
+	"m3u_gen_acestream/util/logger"
 )
 
 // Updater represents update handler for this program.
