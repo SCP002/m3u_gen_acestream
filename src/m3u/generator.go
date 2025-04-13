@@ -70,8 +70,11 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 			})
 		})
 
-		// Sort entries by categories.
-		slices.SortFunc(entries, func(a, b Entry) int {
+		// Sort entries by names and categories.
+		slices.SortStableFunc(entries, func(a, b Entry) int {
+			return strings.Compare(a.Name, b.Name)
+		})
+		slices.SortStableFunc(entries, func(a, b Entry) int {
 			return strings.Compare(a.Categories, b.Categories)
 		})
 
