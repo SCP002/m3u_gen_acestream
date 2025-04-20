@@ -377,12 +377,7 @@ func filterByName(log *logger.Logger,
 		searchResults = filterAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
 			return lo.SomeBy(playlist.NameRxFilter, func(rxStr string) bool {
 				rx := regexp2.MustCompile(rxStr, regexp2.RE2)
-				var keep bool
-				if rx == nil {
-					keep = true
-				} else {
-					keep, _ = rx.MatchString(item.Name)
-				}
+				keep, _ := rx.MatchString(item.Name)
 				if !keep {
 					log.DebugFi("Rejected", "name", item.Name, "playlist", playlist.OutputPath)
 				}
@@ -394,12 +389,7 @@ func filterByName(log *logger.Logger,
 		searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
 			return lo.SomeBy(playlist.NameRxBlacklist, func(rxStr string) bool {
 				rx := regexp2.MustCompile(rxStr, regexp2.RE2)
-				var reject bool
-				if rx == nil {
-					reject = false
-				} else {
-					reject, _ = rx.MatchString(item.Name)
-				}
+				reject, _ := rx.MatchString(item.Name)
 				if reject {
 					log.DebugFi("Rejected", "name", item.Name, "playlist", playlist.OutputPath)
 				}
