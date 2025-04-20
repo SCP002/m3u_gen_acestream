@@ -244,7 +244,7 @@ playlists:
 
 ## Build from source code [Go / Golang]
 
-1. Install [Golang](https://golang.org/) 1.23 or newer.
+1. Install [Golang](https://golang.org/) 1.24 or newer.
 
 2. Download the source code:  
 

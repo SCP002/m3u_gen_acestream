@@ -31,8 +31,8 @@ type Playlist struct {
 	EntryTemplate                *template.Template  `yaml:"entryTemplate"`
 	CategoryRxToCategoryMap      map[string]string   `yaml:"categoryRxToCategoryMap"`
 	NameRxToCategoriesMap        map[string][]string `yaml:"nameRxToCategoriesMap"`
-	NameRxFilter                 []*regexp2.Regexp   `yaml:"nameRxFilter"`
-	NameRxBlacklist              []*regexp2.Regexp   `yaml:"nameRxBlacklist"`
+	NameRxFilter                 []string            `yaml:"nameRxFilter"`
+	NameRxBlacklist              []string            `yaml:"nameRxBlacklist"`
 	CategoriesFilter             []string            `yaml:"categoriesFilter"`
 	CategoriesFilterStrict       bool                `yaml:"categoriesFilterStrict"`
 	CategoriesBlacklist          []string            `yaml:"categoriesBlacklist"`
@@ -74,11 +74,6 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		}
 
 		err = yaml.UnmarshalWithOptions(bytes, &cfg,
-			yaml.CustomUnmarshaler(func(t *regexp2.Regexp, b []byte) error {
-				rx, err := regexp2.Compile(string(b), regexp2.RE2)
-				*t = *rx
-				return err
-			}),
 			yaml.CustomUnmarshaler(func(t *template.Template, b []byte) error {
 				templ, err := t.Parse(blockBytesToString(b))
 				*t = *templ
@@ -104,10 +99,7 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		}
 
 		bytes, err := yaml.MarshalWithOptions(defCfg, yaml.WithComment(defCommentMap),
-			yaml.CustomMarshaler(func(t regexp2.Regexp) ([]byte, error) {
-				return []byte(t.String()), nil
-			}),
-			yaml.CustomMarshaler(func(t template.Template) ([]byte, error) {
+			yaml.CustomMarshaler(func(t *template.Template) ([]byte, error) {
 				return stringToBlockBytes(t.Root.String()), nil
 			}),
 			yaml.CustomMarshaler(func(t BlockStr) ([]byte, error) {
@@ -130,6 +122,16 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 			for rx := range playlist.NameRxToCategoriesMap {
 				if _, err := regexp2.Compile(rx, regexp2.RE2); err != nil {
 					return errors.Wrapf(err, "Can not compile regular expression %v in nameRxToCategoriesMap", rx)
+				}
+			}
+			for _, rx := range playlist.NameRxFilter {
+				if _, err := regexp2.Compile(rx, regexp2.RE2); err != nil {
+					return errors.Wrapf(err, "Can not compile regular expression %v in nameRxFilter", rx)
+				}
+			}
+			for _, rx := range playlist.NameRxBlacklist {
+				if _, err := regexp2.Compile(rx, regexp2.RE2); err != nil {
+					return errors.Wrapf(err, "Can not compile regular expression %v in nameRxBlacklist", rx)
 				}
 			}
 		}
@@ -168,12 +170,6 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 	hlsTemplate := template.Must(template.New("").Parse(entryLine1 + "\n" + entryHlsLink))
 	httpAceProxyTemplate := template.Must(template.New("").Parse(entryLine1 + "\n" + entryHttpAceProxyLink))
 
-	regexpsPorn := []*regexp2.Regexp{
-		regexp2.MustCompile(`(?i).*erotic.*`, regexp2.RE2),
-		regexp2.MustCompile(`(?i).*porn.*`, regexp2.RE2),
-		regexp2.MustCompile(`(?i).*18\+.*`, regexp2.RE2),
-	}
-
 	regexpNonDefault := `^(?!.*(informational|entertaining|educational|movies|documentaries|sport|fashion|music|` +
 		`regional|ethnic|religion|teleshop|erotic_18_plus|other_18_plus|cyber_games|amateur|webcam)).*`
 
@@ -186,8 +182,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				EntryTemplate:                mpegTsTemplate,
 				CategoryRxToCategoryMap:      map[string]string{regexpNonDefault: "other"},
 				NameRxToCategoriesMap:        map[string][]string{},
-				NameRxFilter:                 []*regexp2.Regexp{},
-				NameRxBlacklist:              []*regexp2.Regexp{},
+				NameRxFilter:                 []string{},
+				NameRxBlacklist:              []string{},
 				CategoriesFilter:             []string{},
 				CategoriesFilterStrict:       false,
 				CategoriesBlacklist:          []string{},
@@ -207,8 +203,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				EntryTemplate:                hlsTemplate,
 				CategoryRxToCategoryMap:      map[string]string{`(?i)^tv$`: "television", `^$`: "unknown"},
 				NameRxToCategoriesMap:        map[string][]string{},
-				NameRxFilter:                 []*regexp2.Regexp{},
-				NameRxBlacklist:              []*regexp2.Regexp{},
+				NameRxFilter:                 []string{},
+				NameRxBlacklist:              []string{},
 				CategoriesFilter:             []string{"tv", "music", "unknown"},
 				CategoriesFilterStrict:       false,
 				CategoriesBlacklist:          []string{},
@@ -228,8 +224,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				EntryTemplate:                httpAceProxyTemplate,
 				CategoryRxToCategoryMap:      map[string]string{},
 				NameRxToCategoriesMap:        map[string][]string{},
-				NameRxFilter:                 []*regexp2.Regexp{},
-				NameRxBlacklist:              regexpsPorn,
+				NameRxFilter:                 []string{},
+				NameRxBlacklist:              []string{`(?i).*erotic.*`, `(?i).*porn.*`, `(?i).*18\+.*`},
 				CategoriesFilter:             []string{},
 				CategoriesFilterStrict:       false,
 				CategoriesBlacklist:          []string{"erotic_18_plus", "18+"},

@@ -980,22 +980,8 @@ func TestFilterByName(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp2.Regexp{},
-				NameRxBlacklist: []*regexp2.Regexp{},
-			},
-			expected: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "name 1"}}},
-			},
-			logLines: []string{timeRx + ` INFO Rejected: sources "0", by "name", playlist "file.m3u8"`},
-		},
-		"regular expressions in lists are nil": {
-			input: []acestream.SearchResult{
-				{Items: []acestream.Item{{Name: "name 1"}}},
-			},
-			playlist: config.Playlist{
-				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp2.Regexp{nil},
-				NameRxBlacklist: []*regexp2.Regexp{nil},
+				NameRxFilter:    []string{},
+				NameRxBlacklist: []string{},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1"}}},
@@ -1008,8 +994,8 @@ func TestFilterByName(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp2.Regexp{regexp2.MustCompile("", regexp2.RE2)},
-				NameRxBlacklist: []*regexp2.Regexp{nil},
+				NameRxFilter:    []string{""},
+				NameRxBlacklist: []string{},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1"}}},
@@ -1022,8 +1008,8 @@ func TestFilterByName(t *testing.T) {
 			},
 			playlist: config.Playlist{
 				OutputPath:      "file.m3u8",
-				NameRxFilter:    []*regexp2.Regexp{nil},
-				NameRxBlacklist: []*regexp2.Regexp{regexp2.MustCompile("", regexp2.RE2)},
+				NameRxFilter:    []string{},
+				NameRxBlacklist: []string{""},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{}},
@@ -1036,12 +1022,9 @@ func TestFilterByName(t *testing.T) {
 				{Items: []acestream.Item{{Name: "xxx keep1 xxx"}, {Name: "xxx keep2 xxx"}, {Name: "xxx skip xxx"}}},
 			},
 			playlist: config.Playlist{
-				OutputPath: "file.m3u8",
-				NameRxFilter: []*regexp2.Regexp{
-					regexp2.MustCompile(`.*keep1.*`, regexp2.RE2),
-					regexp2.MustCompile(`.*keep2.*`, regexp2.RE2),
-				},
-				NameRxBlacklist: []*regexp2.Regexp{},
+				OutputPath:      "file.m3u8",
+				NameRxFilter:    []string{`.*keep1.*`, `.*keep2.*`},
+				NameRxBlacklist: []string{},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "xxx keep1 xxx"}, {Name: "xxx keep2 xxx"}}},
@@ -1055,12 +1038,9 @@ func TestFilterByName(t *testing.T) {
 				{Items: []acestream.Item{{Name: "xxx skip1 xxx"}, {Name: "xxx skip2 xxx"}, {Name: "xxx keep xxx"}}},
 			},
 			playlist: config.Playlist{
-				OutputPath:   "file.m3u8",
-				NameRxFilter: []*regexp2.Regexp{},
-				NameRxBlacklist: []*regexp2.Regexp{
-					regexp2.MustCompile(`.*skip1.*`, regexp2.RE2),
-					regexp2.MustCompile(`.*skip2.*`, regexp2.RE2),
-				},
+				OutputPath:      "file.m3u8",
+				NameRxFilter:    []string{},
+				NameRxBlacklist: []string{`.*skip1.*`, `.*skip2.*`},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "xxx keep xxx"}}},
@@ -1074,12 +1054,9 @@ func TestFilterByName(t *testing.T) {
 				{Items: []acestream.Item{{Name: "xxx skip1 xxx"}, {Name: "xxx skip2 xxx"}, {Name: "xxx keep xxx"}}},
 			},
 			playlist: config.Playlist{
-				OutputPath:   "file.m3u8",
-				NameRxFilter: []*regexp2.Regexp{regexp2.MustCompile(`xxx .* xxx`, regexp2.RE2)},
-				NameRxBlacklist: []*regexp2.Regexp{
-					regexp2.MustCompile(`.*skip1.*`, regexp2.RE2),
-					regexp2.MustCompile(`.*skip2.*`, regexp2.RE2),
-				},
+				OutputPath:      "file.m3u8",
+				NameRxFilter:    []string{`xxx .* xxx`},
+				NameRxBlacklist: []string{`.*skip1.*`, `.*skip2.*`},
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{}},
