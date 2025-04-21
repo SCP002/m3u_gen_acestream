@@ -120,11 +120,11 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 
 // newDefCfg returns new default config and comment map.
 func newDefCfg() (*Config, yaml.CommentMap) {
-	headerLine := `#EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1`
-	entryLine1 := `#EXTINF:-1 group-title="{{.Categories}}",{{.Name}}`
-	entryMpegtsLink := `http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}`
-	entryHlsLink := `http://{{.EngineAddr}}/ace/manifest.m3u8?infohash={{.Infohash}}`
-	entryHttpAceProxyLink := `http://127.0.0.1:8000/infohash/{{.Infohash}}/stream.mp4`
+	headerLine := `#EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1` + "\n"
+	entryLine1 := `#EXTINF:-1 group-title="{{.Categories}}",{{.Name}}` + "\n"
+	entryMpegtsLink := `http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}` + "\n"
+	entryHlsLink := `http://{{.EngineAddr}}/ace/manifest.m3u8?infohash={{.Infohash}}` + "\n"
+	entryHttpAceProxyLink := `http://127.0.0.1:8000/infohash/{{.Infohash}}/stream.mp4` + "\n"
 
 	regexpNonDefault := `^(?!.*(informational|entertaining|educational|movies|documentaries|sport|fashion|music|` +
 		`regional|ethnic|religion|teleshop|erotic_18_plus|other_18_plus|cyber_games|amateur|webcam)).*`
@@ -135,7 +135,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			{
 				OutputPath:                   "./out/playlist_alive_mpegts.m3u8",
 				HeaderTemplate:               headerLine,
-				EntryTemplate:                entryLine1 + "\n" + entryMpegtsLink,
+				EntryTemplate:                entryLine1 + entryMpegtsLink,
 				CategoryRxToCategoryMap:      map[string]string{regexpNonDefault: "other"},
 				NameRxToCategoriesMap:        map[string][]string{},
 				NameRxFilter:                 []string{},
@@ -156,7 +156,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			{
 				OutputPath:                   "./out/playlist_alive_hls_tv_+_music_+_no_category.m3u8",
 				HeaderTemplate:               headerLine,
-				EntryTemplate:                entryLine1 + "\n" + entryHlsLink,
+				EntryTemplate:                entryLine1 + entryHlsLink,
 				CategoryRxToCategoryMap:      map[string]string{`(?i)^tv$`: "television", `^$`: "unknown"},
 				NameRxToCategoriesMap:        map[string][]string{},
 				NameRxFilter:                 []string{},
@@ -177,7 +177,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			{
 				OutputPath:                   "./out/playlist_alive_httpaceproxy_all_but_porn.m3u8",
 				HeaderTemplate:               headerLine,
-				EntryTemplate:                entryLine1 + "\n" + entryHttpAceProxyLink,
+				EntryTemplate:                entryLine1 + entryHttpAceProxyLink,
 				CategoryRxToCategoryMap:      map[string]string{},
 				NameRxToCategoriesMap:        map[string][]string{},
 				NameRxFilter:                 []string{},
