@@ -11,7 +11,7 @@ require (
 	github.com/goccy/go-json v0.10.5
 	github.com/goccy/go-yaml v1.17.1
 	github.com/jessevdk/go-flags v1.6.1
-	github.com/phuslu/log v1.0.115
+	github.com/phuslu/log v1.0.117
 	github.com/samber/lo v1.49.1
 	github.com/stretchr/testify v1.10.0
 )
