@@ -3,14 +3,12 @@ package config
 import (
 	"io/fs"
 	"os"
-	"strings"
 	"text/template"
 	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/dlclark/regexp2"
 	"github.com/goccy/go-yaml"
-	"github.com/samber/lo"
 
 	"m3u_gen_acestream/util/logger"
 )
@@ -21,14 +19,11 @@ type Config struct {
 	Playlists  []Playlist `yaml:"playlists"`
 }
 
-// BlockStr represents YAML block string.
-type BlockStr string
-
 // Playlist represents set of parameters for M3U playlist generation such as output path, template and filter criterias.
 type Playlist struct {
 	OutputPath                   string              `yaml:"outputPath"`
-	HeaderTemplate               BlockStr            `yaml:"headerTemplate"`
-	EntryTemplate                *template.Template  `yaml:"entryTemplate"`
+	HeaderTemplate               string              `yaml:"headerTemplate"`
+	EntryTemplate                string              `yaml:"entryTemplate"`
 	CategoryRxToCategoryMap      map[string]string   `yaml:"categoryRxToCategoryMap"`
 	NameRxToCategoriesMap        map[string][]string `yaml:"nameRxToCategoriesMap"`
 	NameRxFilter                 []string            `yaml:"nameRxFilter"`
@@ -61,51 +56,13 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		if err != nil {
 			return err
 		}
-
-		blockBytesToString := func(b []byte) string {
-			lines := strings.Split(string(b), "\n")
-			if lines[0] == ">" || lines[0] == "|" {
-				lines = lines[1:]
-			}
-			lines = lo.Map(lines, func(line string, _ int) string {
-				return strings.TrimPrefix(line, "    ")
-			})
-			return strings.Join(lines, "\n")
-		}
-
-		err = yaml.UnmarshalWithOptions(bytes, &cfg,
-			yaml.CustomUnmarshaler(func(t *template.Template, b []byte) error {
-				templ, err := t.Parse(blockBytesToString(b))
-				*t = *templ
-				return err
-			}),
-			yaml.CustomUnmarshaler(func(t *BlockStr, b []byte) error {
-				*t = BlockStr(blockBytesToString(b))
-				return err
-			}),
-		)
-
+		err = yaml.Unmarshal(bytes, &cfg)
 		return errors.Wrap(err, "Decode config file")
 	}
 
 	writeDefConfig := func() error {
-		stringToBlockBytes := func(s string) []byte {
-			lines := strings.Split(s, "\n")
-			lines = lo.Map(lines, func(line string, _ int) string {
-				return "  " + line
-			})
-			chunk := strings.Join(lines, "\n")
-			return []byte("|\n" + chunk)
-		}
-
 		bytes, err := yaml.MarshalWithOptions(defCfg, yaml.WithComment(defCommentMap),
-			yaml.CustomMarshaler(func(t *template.Template) ([]byte, error) {
-				return stringToBlockBytes(t.Root.String()), nil
-			}),
-			yaml.CustomMarshaler(func(t BlockStr) ([]byte, error) {
-				return stringToBlockBytes(string(t)), nil
-			}),
-		)
+			yaml.UseLiteralStyleIfMultiline(true), yaml.UseSingleQuote(true))
 		if err != nil {
 			return errors.Wrap(err, "Encode config file")
 		}
@@ -116,23 +73,26 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		for _, playlist := range cfg.Playlists {
 			for rx := range playlist.CategoryRxToCategoryMap {
 				if _, err := regexp2.Compile(rx, regexp2.RE2); err != nil {
-					return errors.Wrapf(err, "Can not compile regular expression %v in categoryRxToCategoryMap", rx)
+					return errors.Wrapf(err, "Can not compile regular expression:\n%v\nin categoryRxToCategoryMap", rx)
 				}
 			}
 			for rx := range playlist.NameRxToCategoriesMap {
 				if _, err := regexp2.Compile(rx, regexp2.RE2); err != nil {
-					return errors.Wrapf(err, "Can not compile regular expression %v in nameRxToCategoriesMap", rx)
+					return errors.Wrapf(err, "Can not compile regular expression:\n%v:\nin nameRxToCategoriesMap", rx)
 				}
 			}
 			for _, rx := range playlist.NameRxFilter {
 				if _, err := regexp2.Compile(rx, regexp2.RE2); err != nil {
-					return errors.Wrapf(err, "Can not compile regular expression %v in nameRxFilter", rx)
+					return errors.Wrapf(err, "Can not compile regular expression:\n%v\nin nameRxFilter", rx)
 				}
 			}
 			for _, rx := range playlist.NameRxBlacklist {
 				if _, err := regexp2.Compile(rx, regexp2.RE2); err != nil {
-					return errors.Wrapf(err, "Can not compile regular expression %v in nameRxBlacklist", rx)
+					return errors.Wrapf(err, "Can not compile regular expression:\n%v\nin nameRxBlacklist", rx)
 				}
+			}
+			if _, err := template.New("").Parse(playlist.EntryTemplate); err != nil {
+				return errors.Wrapf(err, "Can not parse template:\n%v\nin entryTemplate", playlist.EntryTemplate)
 			}
 		}
 		return nil
@@ -160,15 +120,11 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 
 // newDefCfg returns new default config and comment map.
 func newDefCfg() (*Config, yaml.CommentMap) {
-	headerLine := BlockStr(`#EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1`)
+	headerLine := `#EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1`
 	entryLine1 := `#EXTINF:-1 group-title="{{.Categories}}",{{.Name}}`
 	entryMpegtsLink := `http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}`
 	entryHlsLink := `http://{{.EngineAddr}}/ace/manifest.m3u8?infohash={{.Infohash}}`
 	entryHttpAceProxyLink := `http://127.0.0.1:8000/infohash/{{.Infohash}}/stream.mp4`
-
-	mpegTsTemplate := template.Must(template.New("").Parse(entryLine1 + "\n" + entryMpegtsLink))
-	hlsTemplate := template.Must(template.New("").Parse(entryLine1 + "\n" + entryHlsLink))
-	httpAceProxyTemplate := template.Must(template.New("").Parse(entryLine1 + "\n" + entryHttpAceProxyLink))
 
 	regexpNonDefault := `^(?!.*(informational|entertaining|educational|movies|documentaries|sport|fashion|music|` +
 		`regional|ethnic|religion|teleshop|erotic_18_plus|other_18_plus|cyber_games|amateur|webcam)).*`
@@ -179,7 +135,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			{
 				OutputPath:                   "./out/playlist_alive_mpegts.m3u8",
 				HeaderTemplate:               headerLine,
-				EntryTemplate:                mpegTsTemplate,
+				EntryTemplate:                entryLine1 + "\n" + entryMpegtsLink,
 				CategoryRxToCategoryMap:      map[string]string{regexpNonDefault: "other"},
 				NameRxToCategoriesMap:        map[string][]string{},
 				NameRxFilter:                 []string{},
@@ -200,7 +156,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			{
 				OutputPath:                   "./out/playlist_alive_hls_tv_+_music_+_no_category.m3u8",
 				HeaderTemplate:               headerLine,
-				EntryTemplate:                hlsTemplate,
+				EntryTemplate:                entryLine1 + "\n" + entryHlsLink,
 				CategoryRxToCategoryMap:      map[string]string{`(?i)^tv$`: "television", `^$`: "unknown"},
 				NameRxToCategoriesMap:        map[string][]string{},
 				NameRxFilter:                 []string{},
@@ -221,7 +177,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			{
 				OutputPath:                   "./out/playlist_alive_httpaceproxy_all_but_porn.m3u8",
 				HeaderTemplate:               headerLine,
-				EntryTemplate:                httpAceProxyTemplate,
+				EntryTemplate:                entryLine1 + "\n" + entryHttpAceProxyLink,
 				CategoryRxToCategoryMap:      map[string]string{},
 				NameRxToCategoriesMap:        map[string][]string{},
 				NameRxFilter:                 []string{},

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -86,7 +87,8 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 		var buff bytes.Buffer
 		buff.WriteString(string(playlist.HeaderTemplate))
 		for _, entry := range entries {
-			if err := playlist.EntryTemplate.Execute(&buff, entry); err != nil {
+			templ := template.Must(template.New("").Parse(playlist.EntryTemplate))
+			if err := templ.Execute(&buff, entry); err != nil {
 				return errors.Wrapf(err, "Execute template for entry %+v", entry)
 			}
 		}
