@@ -85,9 +85,9 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 			return errors.Wrapf(err, "Make directory structure for playlist %v", playlist.OutputPath)
 		}
 		var buff bytes.Buffer
-		buff.WriteString(string(playlist.HeaderTemplate))
+		buff.WriteString(playlist.HeaderTemplate)
+		templ := template.Must(template.New("").Parse(playlist.EntryTemplate))
 		for _, entry := range entries {
-			templ := template.Must(template.New("").Parse(playlist.EntryTemplate))
 			if err := templ.Execute(&buff, entry); err != nil {
 				return errors.Wrapf(err, "Execute template for entry %+v", entry)
 			}
