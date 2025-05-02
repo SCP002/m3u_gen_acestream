@@ -14,6 +14,7 @@ require (
 	github.com/phuslu/log v1.0.117
 	github.com/samber/lo v1.49.1
 	github.com/stretchr/testify v1.10.0
+	github.com/ziutek/dvb v0.1.5
 )
 
 require (
