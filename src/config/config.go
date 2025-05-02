@@ -104,7 +104,7 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		return nil
 	}
 
-	addNewOprions := func() error {
+	addNewOptions := func() error {
 		modified := false
 		for idx, playlist := range cfg.Playlists {
 			if playlist.RemoveDeadChannels == nil {
@@ -155,7 +155,7 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		return &cfg, false, errors.Wrap(err, "Validate config")
 	}
 
-	if err := addNewOprions(); err != nil {
+	if err := addNewOptions(); err != nil {
 		return &cfg, false, errors.Wrap(err, "Add new options")
 	}
 
