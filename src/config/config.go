@@ -164,7 +164,7 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 
 // newDefCfg returns new default config and comment map.
 func newDefCfg() (*Config, yaml.CommentMap) {
-	headerLine := `#EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1` + "\n"
+	headerLine := `#EXTM3U url-tvg="http://epg.one/epg2.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1` + "\n"
 	entryLine1 := `#EXTINF:-1 group-title="{{.Categories}}",{{.Name}}` + "\n"
 	entryMpegtsLink := `http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}` + "\n"
 	entryHlsLink := `http://{{.EngineAddr}}/ace/manifest.m3u8?infohash={{.Infohash}}` + "\n"
