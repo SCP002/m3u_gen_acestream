@@ -179,6 +179,15 @@ playlists:
   # Only keep channels which availability was updated that much time ago or sooner.
   # The lower this value is, the more channels gets removed.
   availabilityUpdatedThreshold: 36h0m0s
+  #
+  # Remove channels that does not respond with any content.
+  removeDeadChannels: false
+  #
+  # Try to read TS packets when removing dead channels.
+  useMpegTsAnalyzer: false
+  #
+  # Timeout for reading Ace Stream Engine response when removing dead channels.
+  checkRespTimeout: 20s
 #
 # HLS format, alive, only keep tv, music and empty category.
 # Change category 'tv' to 'television' and empty category to 'unknown'.
@@ -210,6 +219,9 @@ playlists:
   - 2
   availabilityThreshold: 1.0
   availabilityUpdatedThreshold: 36h0m0s
+  removeDeadChannels: false
+  useMpegTsAnalyzer: false
+  checkRespTimeout: 20s
 #
 # https://github.com/pepsik-kiev/HTTPAceProxy format, alive, all but erotic channels.
 - outputPath: ./out/playlist_alive_httpaceproxy_all_but_porn.m3u8
@@ -240,6 +252,9 @@ playlists:
   - 2
   availabilityThreshold: 1.0
   availabilityUpdatedThreshold: 36h0m0s
+  removeDeadChannels: false
+  useMpegTsAnalyzer: false
+  checkRespTimeout: 20s
 ```
 
 ## Build from source code [Go / Golang]
