@@ -460,7 +460,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" Try to read TS packets when removing dead channels.",
 			),
 		},
-		"$.playlists[0].engineRespTimeout": []*yaml.Comment{
+		"$.playlists[0].checkRespTimeout": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
 				" Timeout for reading Ace Stream Engine response when removing dead channels.",
