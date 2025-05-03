@@ -412,6 +412,9 @@ func filterByName(log *logger.Logger,
 
 // removeDead returns `searchResults` without unavailable channels using settings in `playlist` and Ace Stream Engine
 // address `engineAddr`.
+//
+// `infohashCheckErrorMap` is used to cache check results and prevent repeating checks over multiple calls to this
+// function.
 func removeDead(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist,
