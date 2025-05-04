@@ -1090,7 +1090,7 @@ func TestRemoveDead(t *testing.T) {
 	linkPrefix := `http:\/\/127.0.0.1:6878\/ace\/getstream\?infohash=`
 
 	tests := map[string]TransformTest{
-		"2 alive, 2 dead channels": {
+		"2 alive, 2 dead sources": {
 			input: []acestream.SearchResult{
 				{Items: []acestream.Item{
 					{Name: "name 1 alive", Infohash: hashAlive},
@@ -1102,10 +1102,10 @@ func TestRemoveDead(t *testing.T) {
 				}},
 			},
 			playlist: config.Playlist{
-				OutputPath:         "file.m3u8",
-				RemoveDeadChannels: lo.ToPtr(true),
-				UseMpegTsAnalyzer:  lo.ToPtr(true),
-				CheckRespTimeout:   lo.ToPtr(time.Second * 20),
+				OutputPath:        "file.m3u8",
+				RemoveDeadSources: lo.ToPtr(true),
+				UseMpegTsAnalyzer: lo.ToPtr(true),
+				CheckRespTimeout:  lo.ToPtr(time.Second * 20),
 			},
 			expected: []acestream.SearchResult{
 				{Items: []acestream.Item{{Name: "name 1 alive", Infohash: hashAlive}}},

@@ -41,7 +41,7 @@ func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *c
 	for _, playlist := range cfg.Playlists {
 		searchResults := remap(log, searchResults, playlist)
 		searchResults = filter(log, searchResults, playlist)
-		if *playlist.RemoveDeadChannels {
+		if *playlist.RemoveDeadSources {
 			searchResults = removeDead(log, searchResults, playlist, cfg.EngineAddr, infohashCheckErrorMap)
 		}
 
@@ -410,7 +410,7 @@ func filterByName(log *logger.Logger,
 	return searchResults
 }
 
-// removeDead returns `searchResults` without unavailable channels using settings in `playlist` and Ace Stream Engine
+// removeDead returns `searchResults` without unavailable sources using settings in `playlist` and Ace Stream Engine
 // address `engineAddr`.
 //
 // `infohashCheckErrorMap` is used to cache check results and prevent repeating checks over multiple calls to this
@@ -420,6 +420,7 @@ func removeDead(log *logger.Logger,
 	playlist config.Playlist,
 	engineAddr string,
 	infohashCheckErrorMap map[string]error) []acestream.SearchResult {
+	log.Info("Removing dead sources")
 	prevSources := acestream.GetSourcesAmount(searchResults)
 	checker := acestream.NewChecker()
 	searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {

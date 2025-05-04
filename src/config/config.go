@@ -42,7 +42,7 @@ type Playlist struct {
 	StatusFilter                 []int               `yaml:"statusFilter"`
 	AvailabilityThreshold        float64             `yaml:"availabilityThreshold"`
 	AvailabilityUpdatedThreshold time.Duration       `yaml:"availabilityUpdatedThreshold"`
-	RemoveDeadChannels           *bool               `yaml:"removeDeadChannels"`
+	RemoveDeadSources            *bool               `yaml:"removeDeadSources"`
 	UseMpegTsAnalyzer            *bool               `yaml:"useMpegTsAnalyzer"`
 	CheckRespTimeout             *time.Duration      `yaml:"checkRespTimeout"`
 }
@@ -107,11 +107,11 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 	addNewOptions := func() error {
 		modified := false
 		for idx, playlist := range cfg.Playlists {
-			if playlist.RemoveDeadChannels == nil {
+			if playlist.RemoveDeadSources == nil {
 				defVal := lo.ToPtr(false)
-				path := fmt.Sprintf("$.playlists[%v].removeDeadChannels", idx)
+				path := fmt.Sprintf("$.playlists[%v].removeDeadSources", idx)
 				log.InfoFi("Adding new config option", "path", path, "value", defVal, "playlist", playlist.OutputPath)
-				cfg.Playlists[idx].RemoveDeadChannels = defVal
+				cfg.Playlists[idx].RemoveDeadSources = defVal
 				commentMap[path] = defCommentMap[path]
 				modified = true
 			}
@@ -196,7 +196,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        1.0,
 				AvailabilityUpdatedThreshold: time.Hour * 12 * 3,
-				RemoveDeadChannels:           lo.ToPtr(false),
+				RemoveDeadSources:            lo.ToPtr(false),
 				UseMpegTsAnalyzer:            lo.ToPtr(false),
 				CheckRespTimeout:             lo.ToPtr(time.Second * 20),
 			},
@@ -220,7 +220,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        1.0,
 				AvailabilityUpdatedThreshold: time.Hour * 12 * 3,
-				RemoveDeadChannels:           lo.ToPtr(false),
+				RemoveDeadSources:            lo.ToPtr(false),
 				UseMpegTsAnalyzer:            lo.ToPtr(false),
 				CheckRespTimeout:             lo.ToPtr(time.Second * 20),
 			},
@@ -244,7 +244,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        1.0,
 				AvailabilityUpdatedThreshold: time.Hour * 12 * 3,
-				RemoveDeadChannels:           lo.ToPtr(false),
+				RemoveDeadSources:            lo.ToPtr(false),
 				UseMpegTsAnalyzer:            lo.ToPtr(false),
 				CheckRespTimeout:             lo.ToPtr(time.Second * 20),
 			},
@@ -448,22 +448,22 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" The lower this value is, the more channels gets removed.",
 			),
 		},
-		"$.playlists[0].removeDeadChannels": []*yaml.Comment{
+		"$.playlists[0].removeDeadSources": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
-				" Remove channels that does not respond with any content.",
+				" Remove sources that does not respond with any content.",
 			),
 		},
 		"$.playlists[0].useMpegTsAnalyzer": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
-				" Try to read TS packets when removing dead channels.",
+				" Try to read TS packets when removing dead sources.",
 			),
 		},
 		"$.playlists[0].checkRespTimeout": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
-				" Timeout for reading Ace Stream Engine response when removing dead channels.",
+				" Timeout for reading Ace Stream Engine response when removing dead sources.",
 			),
 		},
 		"$.playlists[1]": []*yaml.Comment{
