@@ -420,7 +420,7 @@ func removeDead(log *logger.Logger,
 	playlist config.Playlist,
 	engineAddr string,
 	infohashCheckErrorMap map[string]error) []acestream.SearchResult {
-	log.Info("Removing dead sources")
+	log.InfoFi("Removing dead sources", "playlist", playlist.OutputPath)
 	prevSources := acestream.GetSourcesAmount(searchResults)
 	checker := acestream.NewChecker()
 	searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
