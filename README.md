@@ -183,10 +183,10 @@ playlists:
   # Remove channels that does not respond with any content.
   removeDeadSources: false
   #
-  # Try to read TS packets when removing dead channels.
+  # Try to read TS packets when removing dead sources.
   useMpegTsAnalyzer: false
   #
-  # Timeout for reading Ace Stream Engine response when removing dead channels.
+  # Timeout for reading Ace Stream Engine response when removing dead sources.
   checkRespTimeout: 20s
 #
 # HLS format, alive, only keep tv, music and empty category.
