@@ -8,6 +8,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/ziutek/dvb/ts"
+
+	"m3u_gen_acestream/util/network"
 )
 
 // Checker respresents availability checker.
@@ -17,7 +19,7 @@ type Checker struct {
 
 // NewChecker return new availability checker.
 func NewChecker() *Checker {
-	return &Checker{httpClient: &http.Client{}}
+	return &Checker{httpClient: network.NewHTTPClient(0)}
 }
 
 // IsAvailable returns nil error if `link` responds with content or non-nil error otherwise.
