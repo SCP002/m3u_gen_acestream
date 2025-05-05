@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dlclark/regexp2"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 
 	"m3u_gen_acestream/acestream"
@@ -1078,4 +1079,58 @@ func TestFilterByName(t *testing.T) {
 		}
 		consoleBuff.Reset()
 	}
+}
+
+func TestRemoveDead(t *testing.T) {
+	var consoleBuff bytes.Buffer
+	log := logger.New(logger.DebugLevel, &consoleBuff)
+
+	hashAlive := "a7c19473d3389a3d9c9d1e268ce6e0550fea3192"
+	hashDead := "9ddda51034375eb93505c076d4437064abdf2dcd"
+	linkPrefix := `http:\/\/127.0.0.1:6878\/ace\/getstream\?infohash=`
+
+	tests := map[string]TransformTest{
+		"2 alive, 2 dead sources": {
+			input: []acestream.SearchResult{
+				{Items: []acestream.Item{
+					{Name: "name 1 alive", Infohash: hashAlive},
+					{Name: "name 2 dead", Infohash: hashDead},
+				}},
+				{Items: []acestream.Item{
+					{Name: "name 3 alive", Infohash: hashAlive},
+					{Name: "name 4 dead", Infohash: hashDead},
+				}},
+			},
+			playlist: config.Playlist{
+				OutputPath:        "file.m3u8",
+				RemoveDeadSources: lo.ToPtr(true),
+				UseMpegTsAnalyzer: lo.ToPtr(true),
+				CheckRespTimeout:  lo.ToPtr(time.Second * 20),
+			},
+			expected: []acestream.SearchResult{
+				{Items: []acestream.Item{{Name: "name 1 alive", Infohash: hashAlive}}},
+				{Items: []acestream.Item{{Name: "name 3 alive", Infohash: hashAlive}}},
+			},
+			logLines: []string{
+				timeRx + ` INFO Keep: name "name 1 alive", link "` + linkPrefix + hashAlive + `"`,
+				timeRx + ` WARN Reject: name "name 2 dead", link "` + linkPrefix + hashDead + `", reason ` +
+					`"Responded with status 500 Internal Server Error"`,
+				timeRx + ` INFO Rejected: sources "2", by "response", playlist "file.m3u8"`,
+			},
+		},
+	}
+
+	infohashCheckErrorMap := make(map[string]error)
+	for name, test := range tests {
+		actual := removeDead(log, test.input, test.playlist, "127.0.0.1:6878", infohashCheckErrorMap)
+		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
+		msg := fmt.Sprintf("Bad log output in test '%v'", name)
+		for _, line := range test.logLines {
+			assert.Regexp(t, regexp2.MustCompile(line, regexp2.RE2), consoleBuff.String(), msg)
+		}
+		consoleBuff.Reset()
+	}
+
+	assert.Contains(t, infohashCheckErrorMap, hashAlive)
+	assert.Contains(t, infohashCheckErrorMap, hashDead)
 }

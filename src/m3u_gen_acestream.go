@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"time"
 
@@ -17,12 +16,13 @@ import (
 	"m3u_gen_acestream/m3u"
 	"m3u_gen_acestream/updater"
 	"m3u_gen_acestream/util/logger"
+	"m3u_gen_acestream/util/network"
 )
 
 func main() {
 	log := logger.New(logger.FatalLevel, os.Stderr)
 
-	programVersion := "v2.0.2"
+	programVersion := "v2.1.0"
 
 	flags, err := cli.Parse()
 	if flags.Version {
@@ -52,9 +52,7 @@ func main() {
 	})
 
 	if flags.Update {
-		updaterHttpClient := &http.Client{
-			Timeout: time.Second * 5,
-		}
+		updaterHttpClient := network.NewHTTPClient(time.Second * 5)
 		updater := updater.New(log, updaterHttpClient)
 
 		if err := updater.Update(programVersion); err != nil {
@@ -73,9 +71,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	engineHttpClient := &http.Client{
-		Timeout: time.Second * 5,
-	}
+	engineHttpClient := network.NewHTTPClient(time.Second * 5)
 	engine := acestream.NewEngine(log, engineHttpClient, cfg.EngineAddr)
 	engine.WaitForConnection(context.Background())
 

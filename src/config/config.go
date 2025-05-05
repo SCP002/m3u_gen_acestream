@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"text/template"
@@ -9,6 +10,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/dlclark/regexp2"
 	"github.com/goccy/go-yaml"
+	"github.com/samber/lo"
 
 	"m3u_gen_acestream/util/logger"
 )
@@ -40,6 +42,9 @@ type Playlist struct {
 	StatusFilter                 []int               `yaml:"statusFilter"`
 	AvailabilityThreshold        float64             `yaml:"availabilityThreshold"`
 	AvailabilityUpdatedThreshold time.Duration       `yaml:"availabilityUpdatedThreshold"`
+	RemoveDeadSources            *bool               `yaml:"removeDeadSources"`
+	UseMpegTsAnalyzer            *bool               `yaml:"useMpegTsAnalyzer"`
+	CheckRespTimeout             *time.Duration      `yaml:"checkRespTimeout"`
 }
 
 // Init returns config instance and false if config at `filePath` already exist.
@@ -49,6 +54,7 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 	log.Info("Reading config")
 
 	var cfg Config
+	commentMap := yaml.CommentMap{}
 	defCfg, defCommentMap := newDefCfg()
 
 	readConfig := func() error {
@@ -56,12 +62,12 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		if err != nil {
 			return err
 		}
-		err = yaml.Unmarshal(bytes, &cfg)
+		err = yaml.UnmarshalWithOptions(bytes, &cfg, yaml.CommentToMap(commentMap))
 		return errors.Wrap(err, "Decode config file")
 	}
 
-	writeDefConfig := func() error {
-		bytes, err := yaml.MarshalWithOptions(defCfg, yaml.WithComment(defCommentMap),
+	writeConfig := func(cfg *Config, comments yaml.CommentMap) error {
+		bytes, err := yaml.MarshalWithOptions(cfg, yaml.WithComment(comments),
 			yaml.UseLiteralStyleIfMultiline(true), yaml.UseSingleQuote(true))
 		if err != nil {
 			return errors.Wrap(err, "Encode config file")
@@ -98,11 +104,45 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		return nil
 	}
 
+	addNewOptions := func() error {
+		modified := false
+		for idx, playlist := range cfg.Playlists {
+			if playlist.RemoveDeadSources == nil {
+				defVal := lo.ToPtr(false)
+				path := fmt.Sprintf("$.playlists[%v].removeDeadSources", idx)
+				log.InfoFi("Adding new config option", "path", path, "value", defVal, "playlist", playlist.OutputPath)
+				cfg.Playlists[idx].RemoveDeadSources = defVal
+				commentMap[path] = defCommentMap[path]
+				modified = true
+			}
+			if playlist.UseMpegTsAnalyzer == nil {
+				defVal := lo.ToPtr(false)
+				path := fmt.Sprintf("$.playlists[%v].useMpegTsAnalyzer", idx)
+				log.InfoFi("Adding new config option", "path", path, "value", defVal, "playlist", playlist.OutputPath)
+				cfg.Playlists[idx].UseMpegTsAnalyzer = defVal
+				commentMap[path] = defCommentMap[path]
+				modified = true
+			}
+			if playlist.CheckRespTimeout == nil {
+				defVal := lo.ToPtr(time.Second * 20)
+				path := fmt.Sprintf("$.playlists[%v].checkRespTimeout", idx)
+				log.InfoFi("Adding new config option", "path", path, "value", defVal, "playlist", playlist.OutputPath)
+				cfg.Playlists[idx].CheckRespTimeout = defVal
+				commentMap[path] = defCommentMap[path]
+				modified = true
+			}
+		}
+		if modified {
+			return errors.Wrap(writeConfig(&cfg, commentMap), "Write config")
+		}
+		return nil
+	}
+
 	// Read config or create a new if not exist.
 	if err := readConfig(); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			log.Info("Config file not found, creating a default")
-			if err := writeDefConfig(); err != nil {
+			if err := writeConfig(defCfg, defCommentMap); err != nil {
 				return &cfg, false, errors.Wrap(err, "Write default config")
 			}
 			return &cfg, true, nil
@@ -115,12 +155,16 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 		return &cfg, false, errors.Wrap(err, "Validate config")
 	}
 
+	if err := addNewOptions(); err != nil {
+		return &cfg, false, errors.Wrap(err, "Add new options")
+	}
+
 	return &cfg, false, nil
 }
 
 // newDefCfg returns new default config and comment map.
 func newDefCfg() (*Config, yaml.CommentMap) {
-	headerLine := `#EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1` + "\n"
+	headerLine := `#EXTM3U url-tvg="http://epg.one/epg2.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1` + "\n"
 	entryLine1 := `#EXTINF:-1 group-title="{{.Categories}}",{{.Name}}` + "\n"
 	entryMpegtsLink := `http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}` + "\n"
 	entryHlsLink := `http://{{.EngineAddr}}/ace/manifest.m3u8?infohash={{.Infohash}}` + "\n"
@@ -133,7 +177,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 		EngineAddr: "127.0.0.1:6878",
 		Playlists: []Playlist{
 			{
-				OutputPath:                   "./out/playlist_alive_mpegts.m3u8",
+				OutputPath:                   "./out/playlist_mpegts_all.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                entryLine1 + entryMpegtsLink,
 				CategoryRxToCategoryMap:      map[string]string{regexpNonDefault: "other"},
@@ -152,9 +196,12 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        1.0,
 				AvailabilityUpdatedThreshold: time.Hour * 12 * 3,
+				RemoveDeadSources:            lo.ToPtr(false),
+				UseMpegTsAnalyzer:            lo.ToPtr(false),
+				CheckRespTimeout:             lo.ToPtr(time.Second * 20),
 			},
 			{
-				OutputPath:                   "./out/playlist_alive_hls_tv_+_music_+_no_category.m3u8",
+				OutputPath:                   "./out/playlist_hls_tv_+_music_+_no_category.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                entryLine1 + entryHlsLink,
 				CategoryRxToCategoryMap:      map[string]string{`(?i)^tv$`: "television", `^$`: "unknown"},
@@ -173,9 +220,12 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        1.0,
 				AvailabilityUpdatedThreshold: time.Hour * 12 * 3,
+				RemoveDeadSources:            lo.ToPtr(false),
+				UseMpegTsAnalyzer:            lo.ToPtr(false),
+				CheckRespTimeout:             lo.ToPtr(time.Second * 20),
 			},
 			{
-				OutputPath:                   "./out/playlist_alive_httpaceproxy_all_but_porn.m3u8",
+				OutputPath:                   "./out/playlist_httpaceproxy_all_but_porn.m3u8",
 				HeaderTemplate:               headerLine,
 				EntryTemplate:                entryLine1 + entryHttpAceProxyLink,
 				CategoryRxToCategoryMap:      map[string]string{},
@@ -194,6 +244,9 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				StatusFilter:                 []int{2},
 				AvailabilityThreshold:        1.0,
 				AvailabilityUpdatedThreshold: time.Hour * 12 * 3,
+				RemoveDeadSources:            lo.ToPtr(false),
+				UseMpegTsAnalyzer:            lo.ToPtr(false),
+				CheckRespTimeout:             lo.ToPtr(time.Second * 20),
 			},
 		},
 	}
@@ -393,6 +446,24 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				"",
 				" Only keep channels which availability was updated that much time ago or sooner.",
 				" The lower this value is, the more channels gets removed.",
+			),
+		},
+		"$.playlists[0].removeDeadSources": []*yaml.Comment{
+			yaml.HeadComment(
+				"",
+				" Remove sources that does not respond with any content.",
+			),
+		},
+		"$.playlists[0].useMpegTsAnalyzer": []*yaml.Comment{
+			yaml.HeadComment(
+				"",
+				" Try to read TS packets when removing dead sources.",
+			),
+		},
+		"$.playlists[0].checkRespTimeout": []*yaml.Comment{
+			yaml.HeadComment(
+				"",
+				" Timeout for reading Ace Stream Engine response when removing dead sources.",
 			),
 		},
 		"$.playlists[1]": []*yaml.Comment{

@@ -2,6 +2,7 @@ package m3u
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -35,9 +36,14 @@ type Entry struct {
 func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *config.Config) error {
 	log.Info("Generating M3U files")
 
+	infohashCheckErrorMap := make(map[string]error)
+
 	for _, playlist := range cfg.Playlists {
 		searchResults := remap(log, searchResults, playlist)
 		searchResults = filter(log, searchResults, playlist)
+		if *playlist.RemoveDeadSources {
+			searchResults = removeDead(log, searchResults, playlist, cfg.EngineAddr, infohashCheckErrorMap)
+		}
 
 		// Transform []SearchResult to []Entry.
 		entries := lo.FlatMap(searchResults, func(sr acestream.SearchResult, _ int) []Entry {
@@ -401,6 +407,45 @@ func filterByName(log *logger.Logger,
 	}
 	currSources := acestream.GetSourcesAmount(searchResults)
 	log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "name", "playlist", playlist.OutputPath)
+	return searchResults
+}
+
+// removeDead returns `searchResults` without unavailable sources using settings in `playlist` and Ace Stream Engine
+// address `engineAddr`.
+//
+// `infohashCheckErrorMap` is used to cache check results and prevent repeating checks over multiple calls to this
+// function.
+func removeDead(log *logger.Logger,
+	searchResults []acestream.SearchResult,
+	playlist config.Playlist,
+	engineAddr string,
+	infohashCheckErrorMap map[string]error) []acestream.SearchResult {
+	log.InfoFi("Removing dead sources", "playlist", playlist.OutputPath)
+	prevSources := acestream.GetSourcesAmount(searchResults)
+	checker := acestream.NewChecker()
+	searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+		cachedResultError, found := infohashCheckErrorMap[item.Infohash]
+		link := fmt.Sprintf("http://%v/ace/getstream?infohash=%v", engineAddr, item.Infohash)
+		if found {
+			if cachedResultError == nil {
+				log.InfoFi("Keep", "name", item.Name, "link", link)
+				return false
+			} else {
+				log.WarnFi("Reject", "name", item.Name, "link", link, "reason", cachedResultError)
+				return true
+			}
+		}
+		err := checker.IsAvailable(link, *playlist.CheckRespTimeout, *playlist.UseMpegTsAnalyzer)
+		infohashCheckErrorMap[item.Infohash] = err
+		if err != nil {
+			log.WarnFi("Reject", "name", item.Name, "link", link, "reason", err)
+			return true
+		}
+		log.InfoFi("Keep", "name", item.Name, "link", link)
+		return false
+	})
+	currSources := acestream.GetSourcesAmount(searchResults)
+	log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "response", "playlist", playlist.OutputPath)
 	return searchResults
 }
 
