@@ -181,7 +181,7 @@ playlists:
   availabilityUpdatedThreshold: 36h0m0s
   #
   # Remove channels that does not respond with any content.
-  removeDeadChannels: false
+  removeDeadSources: false
   #
   # Try to read TS packets when removing dead channels.
   useMpegTsAnalyzer: false
@@ -219,7 +219,7 @@ playlists:
   - 2
   availabilityThreshold: 1.0
   availabilityUpdatedThreshold: 36h0m0s
-  removeDeadChannels: false
+  removeDeadSources: false
   useMpegTsAnalyzer: false
   checkRespTimeout: 20s
 #
@@ -236,7 +236,7 @@ playlists:
   nameRxBlacklist:
   - (?i).*erotic.*
   - (?i).*porn.*
-  - (?i).*18\+.*
+  - '(?i).*18\+.*'
   categoriesFilter: []
   categoriesFilterStrict: false
   categoriesBlacklist:
@@ -252,7 +252,7 @@ playlists:
   - 2
   availabilityThreshold: 1.0
   availabilityUpdatedThreshold: 36h0m0s
-  removeDeadChannels: false
+  removeDeadSources: false
   useMpegTsAnalyzer: false
   checkRespTimeout: 20s
 ```
