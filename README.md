@@ -44,11 +44,11 @@ playlists:
 # Change any non-default category to 'other'.
 - #
   # Destination filepath to write playlist to.
-  outputPath: ./out/playlist_alive_mpegts.m3u8
+  outputPath: ./out/playlist_mpegts_all.m3u8
   #
   # Template for the header of M3U file.
   headerTemplate: |
-    #EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1
+    #EXTM3U url-tvg="http://epg.one/epg2.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1
   #
   # Template for each channel. Available variables are:
   # {{.Name}}
@@ -180,7 +180,7 @@ playlists:
   # The lower this value is, the more channels gets removed.
   availabilityUpdatedThreshold: 36h0m0s
   #
-  # Remove channels that does not respond with any content.
+  # Remove sources that does not respond with any content.
   removeDeadSources: false
   #
   # Try to read TS packets when removing dead sources.
@@ -191,9 +191,9 @@ playlists:
 #
 # HLS format, alive, only keep tv, music and empty category.
 # Change category 'tv' to 'television' and empty category to 'unknown'.
-- outputPath: ./out/playlist_alive_hls_tv_+_music_+_no_category.m3u8
+- outputPath: ./out/playlist_hls_tv_+_music_+_no_category.m3u8
   headerTemplate: |
-    #EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1
+    #EXTM3U url-tvg="http://epg.one/epg2.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1
   entryTemplate: |
     #EXTINF:-1 group-title="{{.Categories}}",{{.Name}}
     http://{{.EngineAddr}}/ace/manifest.m3u8?infohash={{.Infohash}}
@@ -224,9 +224,9 @@ playlists:
   checkRespTimeout: 20s
 #
 # https://github.com/pepsik-kiev/HTTPAceProxy format, alive, all but erotic channels.
-- outputPath: ./out/playlist_alive_httpaceproxy_all_but_porn.m3u8
+- outputPath: ./out/playlist_httpaceproxy_all_but_porn.m3u8
   headerTemplate: |
-    #EXTM3U url-tvg="https://iptvx.one/epg/epg.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1
+    #EXTM3U url-tvg="http://epg.one/epg2.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1
   entryTemplate: |
     #EXTINF:-1 group-title="{{.Categories}}",{{.Name}}
     http://127.0.0.1:8000/infohash/{{.Infohash}}/stream.mp4
