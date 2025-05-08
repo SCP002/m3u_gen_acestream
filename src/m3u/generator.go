@@ -437,12 +437,12 @@ func removeDead(log *logger.Logger,
 		}
 		err := checker.IsAvailable(link, *playlist.CheckRespTimeout, *playlist.UseMpegTsAnalyzer)
 		infohashCheckErrorMap[item.Infohash] = err
-		if err != nil {
-			log.WarnFi("Reject", "name", item.Name, "link", link, "reason", err)
-			return true
+		if err == nil {
+			log.InfoFi("Keep", "name", item.Name, "link", link)
+			return false
 		}
-		log.InfoFi("Keep", "name", item.Name, "link", link)
-		return false
+		log.WarnFi("Reject", "name", item.Name, "link", link, "reason", err)
+		return true
 	})
 	currSources := acestream.GetSourcesAmount(searchResults)
 	log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "response", "playlist", playlist.OutputPath)
