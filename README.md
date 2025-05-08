@@ -9,6 +9,10 @@
 It fetches available channels from ace stream engine using API, filters and transforms them and writes
 M3U playlists using templates defined in config.
 
+## Notes
+
+To use it, VPN or proxy might be required as some ISP block connections to acestream servers.
+
 ## Requirements
 
 [Ace Stream](https://docs.acestream.net/products/) running locally or remotely.
