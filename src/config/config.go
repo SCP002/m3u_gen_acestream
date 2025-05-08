@@ -261,7 +261,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 		"$.playlists[0]": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
-				" MPEG-TS format, alive.",
+				" MPEG-TS format, all.",
 				" Change any non-default category to 'other'.",
 			),
 		},
@@ -469,14 +469,14 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 		"$.playlists[1]": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
-				" HLS format, alive, only keep tv, music and empty category.",
+				" HLS format, only keep tv, music and empty category.",
 				" Change category 'tv' to 'television' and empty category to 'unknown'.",
 			),
 		},
 		"$.playlists[2]": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
-				" https://github.com/pepsik-kiev/HTTPAceProxy format, alive, all but erotic channels.",
+				" https://github.com/pepsik-kiev/HTTPAceProxy format, all but erotic channels.",
 			),
 		},
 	}

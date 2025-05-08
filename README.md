@@ -40,7 +40,7 @@ engineAddr: 127.0.0.1:6878
 # Playlists to generate.
 playlists:
 #
-# MPEG-TS format, alive.
+# MPEG-TS format, all.
 # Change any non-default category to 'other'.
 - #
   # Destination filepath to write playlist to.
@@ -189,7 +189,7 @@ playlists:
   # Timeout for reading Ace Stream Engine response when removing dead sources.
   checkRespTimeout: 20s
 #
-# HLS format, alive, only keep tv, music and empty category.
+# HLS format, only keep tv, music and empty category.
 # Change category 'tv' to 'television' and empty category to 'unknown'.
 - outputPath: ./out/playlist_hls_tv_+_music_+_no_category.m3u8
   headerTemplate: |
@@ -223,7 +223,7 @@ playlists:
   useMpegTsAnalyzer: false
   checkRespTimeout: 20s
 #
-# https://github.com/pepsik-kiev/HTTPAceProxy format, alive, all but erotic channels.
+# https://github.com/pepsik-kiev/HTTPAceProxy format, all but erotic channels.
 - outputPath: ./out/playlist_httpaceproxy_all_but_porn.m3u8
   headerTemplate: |
     #EXTM3U url-tvg="http://epg.one/epg2.xml.gz" tvg-shift=0 deinterlace=1 m3uautoload=1
