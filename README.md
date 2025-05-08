@@ -24,7 +24,7 @@ M3U playlists using templates defined in config.
 | -f, --logFile        | Log file. If set, writes structured log to a file at the specified path                   |
 | -c, --cfgPath        | Config file path to read from or initialize a default [default: `m3u_gen_acestream.yaml`] |
 
-Unless `--cfgPath` is specified, on first run it creates default config in current directory and terminates.
+Unless config already exists, on first run it creates default config in current directory and terminates.
 Tweak it to suit your needs and start the program again.
 
 ## Downloads
