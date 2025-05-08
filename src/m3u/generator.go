@@ -430,10 +430,9 @@ func removeDead(log *logger.Logger,
 			if cachedResultError == nil {
 				log.InfoFi("Keep", "name", item.Name, "link", link)
 				return false
-			} else {
-				log.WarnFi("Reject", "name", item.Name, "link", link, "reason", cachedResultError)
-				return true
 			}
+			log.WarnFi("Reject", "name", item.Name, "link", link, "reason", cachedResultError)
+			return true
 		}
 		err := checker.IsAvailable(link, *playlist.CheckRespTimeout, *playlist.UseMpegTsAnalyzer)
 		infohashCheckErrorMap[item.Infohash] = err
