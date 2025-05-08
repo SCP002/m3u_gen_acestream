@@ -40,7 +40,7 @@ func (c Checker) IsAvailable(link string, timeout time.Duration, analyzeMpegTs b
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return errors.Newf("Response %v", resp.Status)
+		return errors.Newf("Response status %v", resp.Status)
 	}
 	buff := make([]byte, ts.PktLen*10)
 	read, err := resp.Body.Read(buff)
