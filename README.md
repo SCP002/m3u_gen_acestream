@@ -64,37 +64,37 @@ playlists:
     http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}
   #
   # Change categories by category regular expressions (keys) to strings (values).
-  # Use "^$" regular expression to match unset categories.
+  # Use '^$' regular expression to match unset categories.
   # Example:
   # categoryRxToCategoryMap:
-  #   "^category regexp A$": "becomes category B"
-  #   "^category regexp C$": "becomes category D"
+  #   '^category regexp A$': 'becomes category B'
+  #   '^category regexp C$': 'becomes category D'
   categoryRxToCategoryMap:
     ^(?!.*(informational|entertaining|educational|movies|documentaries|sport|fashion|music|regional|ethnic|religion|teleshop|erotic_18_plus|other_18_plus|cyber_games|amateur|webcam)).*: other
   #
   # Set categories by name regular expressions (keys) to list of strings (values).
   # Example:
   # nameRxToCategoriesMap:
-  #   "^name regexp A$":
-  #   - "will have category B"
-  #   - "and category C"
-  #   "^name regexp D$":
-  #   - "will have category E"
-  #   - "and category F"
+  #   '^name regexp A$':
+  #   - 'will have category B'
+  #   - 'and category C'
+  #   '^name regexp D$':
+  #   - 'will have category E'
+  #   - 'and category F'
   nameRxToCategoriesMap: {}
   #
   # Only keep channels which name matches any of these regular expressions.
   # Example:
   # nameRxFilter:
-  # - ".*keep channels matching name A.*"
-  # - ".*keep channels matching name B.*"
+  # - '.*keep channels matching name A.*'
+  # - '.*keep channels matching name B.*'
   nameRxFilter: []
   #
   # Remove channels which name matches any of these regular expressions.
   # Example:
   # nameRxBlacklist:
-  # - ".*remove channels matching name A.*"
-  # - ".*remove channels matching name B.*"
+  # - '.*remove channels matching name A.*'
+  # - '.*remove channels matching name B.*'
   nameRxBlacklist: []
   #
   # Only keep channels which category equals to any of these.
@@ -103,8 +103,8 @@ playlists:
   # Use empty string to include results with unset category.
   # Example:
   # categoriesFilter:
-  # - "keep channels with category A"
-  # - "keep channels with category B"
+  # - 'keep channels with category A'
+  # - 'keep channels with category B'
   categoriesFilter: []
   #
   # If true, only keep channels with categories that are in filter, but not any other.
@@ -116,8 +116,8 @@ playlists:
   # Use empty string to exclude results with unset category.
   # Example:
   # categoriesBlacklist:
-  # - "remove channels with category A"
-  # - "remove channels with category B"
+  # - 'remove channels with category A'
+  # - 'remove channels with category B'
   categoriesBlacklist: []
   #
   # Only keep channels which language equals to any of these.
@@ -125,8 +125,8 @@ playlists:
   # Use empty string to include results with unset language.
   # Example:
   # languagesFilter:
-  # - "keep channels with language A"
-  # - "keep channels with language B"
+  # - 'keep channels with language A'
+  # - 'keep channels with language B'
   languagesFilter: []
   #
   # If true, only keep channels with languages that are in filter, but not any other.
@@ -137,8 +137,8 @@ playlists:
   # Use empty string to exclude results with unset language.
   # Example:
   # languagesBlacklist:
-  # - "remove channels with language A"
-  # - "remove channels with language B"
+  # - 'remove channels with language A'
+  # - 'remove channels with language B'
   languagesBlacklist: []
   #
   # Only keep channels which country equals to any of these.
@@ -146,8 +146,8 @@ playlists:
   # Use empty string to include results with unset country.
   # Example:
   # countriesFilter:
-  # - "keep channels with country A"
-  # - "keep channels with country B"
+  # - 'keep channels with country A'
+  # - 'keep channels with country B'
   countriesFilter: []
   #
   # If true, only keep channels with countries that are in filter, but not any other.
@@ -158,8 +158,8 @@ playlists:
   # Use empty string to exclude results with unset country.
   # Example:
   # countriesBlacklist:
-  # - "remove channels with country A"
-  # - "remove channels with country B"
+  # - 'remove channels with country A'
+  # - 'remove channels with country B'
   countriesBlacklist: []
   #
   # Only keep channels which status equals to any of these.
