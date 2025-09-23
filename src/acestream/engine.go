@@ -104,7 +104,6 @@ func (e Engine) WaitForConnection(ctx context.Context) {
 			e.log.Error(errors.Wrap(ctx.Err(), "Connect to engine"))
 			return
 		default:
-			break
 		}
 		url := url.URL{Scheme: "http", Host: e.addr, Path: "webui/api/service", RawQuery: "method=get_version"}
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
