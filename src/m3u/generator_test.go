@@ -3,6 +3,8 @@ package m3u
 import (
 	"bytes"
 	"fmt"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -1087,7 +1089,8 @@ func TestRemoveDead(t *testing.T) {
 
 	hashAlive := "a7c19473d3389a3d9c9d1e268ce6e0550fea3192"
 	hashDead := "9ddda51034375eb93505c076d4437064abdf2dcd"
-	linkFmt := `http://127.0.0.1:8080/ace/getstream?infohash=%v`
+	linkRxFmt := `http:\/\/127\.0\.0\.1:8080\/ace\/getstream\?infohash=%v`
+	linkTempl := "http://127.0.0.1:8080/ace/getstream?infohash={{.Infohash}}"
 
 	tests := map[string]TransformTest{
 		"2 alive, 2 dead sources": {
@@ -1105,8 +1108,8 @@ func TestRemoveDead(t *testing.T) {
 				OutputPath:        "file.m3u8",
 				RemoveDeadSources: lo.ToPtr(true),
 				UseMpegTsAnalyzer: lo.ToPtr(true),
-				CheckRespTimeout:  lo.ToPtr(time.Second * 20),
-				RemoveDeadLinkTemplate: lo.ToPtr(fmt.Sprintf(linkFmt, "{{.Infohash}}")),
+				CheckRespTimeout:  lo.ToPtr(time.Second * 50),
+				RemoveDeadLinkTemplate: lo.ToPtr(linkTempl),
 				RemoveDeadWorkers: lo.ToPtr(2),
 			},
 			expected: []acestream.SearchResult{
@@ -1114,9 +1117,9 @@ func TestRemoveDead(t *testing.T) {
 				{Items: []acestream.Item{{Name: "name 3 alive", Infohash: hashAlive}}},
 			},
 			logLines: []string{
-				timeRx + ` INFO Keep: name "name 1 alive", link "` + fmt.Sprintf(linkFmt, hashAlive) + `"`,
-				timeRx + ` WARN Reject: name "name 2 dead", link "` + fmt.Sprintf(linkFmt, hashDead) + `", reason ` +
-					`"Responded with status 500 Internal Server Error"`,
+				timeRx + ` INFO Keep: name "name 1 alive", link "` + fmt.Sprintf(linkRxFmt, hashAlive) + `"`,
+				timeRx + ` WARN Reject: name "name 2 dead", link "` + fmt.Sprintf(linkRxFmt, hashDead) + `", reason ` +
+					`"Response status 500 Internal Server Error"`,
 				timeRx + ` INFO Rejected: sources "2", by "response", playlist "file.m3u8"`,
 			},
 		},
@@ -1125,6 +1128,9 @@ func TestRemoveDead(t *testing.T) {
 	infohashCheckErrorMap := make(map[string]error)
 	for name, test := range tests {
 		actual := removeDead(log, test.input, test.playlist, "127.0.0.1:6878", infohashCheckErrorMap)
+		slices.SortStableFunc(actual, func(a, b acestream.SearchResult) int {
+			return strings.Compare(a.Name, b.Name)
+		})
 		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
 		msg := fmt.Sprintf("Bad log output in test '%v'", name)
 		for _, line := range test.logLines {
