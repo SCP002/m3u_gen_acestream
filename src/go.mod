@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	github.com/adampresley/sigint v0.0.0-20150906022118-7e8d2ad16a94
+	github.com/alitto/pond/v2 v2.5.0
 	github.com/cockroachdb/errors v1.11.3
 	github.com/dlclark/regexp2 v1.11.5
 	github.com/fatih/color v1.18.0

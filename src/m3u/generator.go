@@ -2,7 +2,6 @@ package m3u
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -10,6 +9,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/alitto/pond/v2"
 	"github.com/cockroachdb/errors"
 	"github.com/dlclark/regexp2"
 	"github.com/samber/lo"
@@ -423,26 +423,62 @@ func removeDead(log *logger.Logger,
 	log.InfoFi("Removing dead sources", "playlist", playlist.OutputPath)
 	prevSources := acestream.GetSourcesAmount(searchResults)
 	checker := acestream.NewChecker()
-	searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
-		cachedResultError, found := infohashCheckErrorMap[item.Infohash]
-		link := fmt.Sprintf("http://%v/ace/getstream?infohash=%v", engineAddr, item.Infohash)
-		if found {
-			if cachedResultError == nil {
-				log.InfoFi("Keep", "name", item.Name, "link", link)
-				return false
+
+	templ := template.Must(template.New("").Parse(*playlist.RemoveDeadLinkTemplate))
+
+	type jobResult struct {
+		infohash string
+		err      error
+	}
+
+	pool := pond.NewPool(*playlist.RemoveDeadWorkers)
+	resultsCh := make(chan jobResult, 1024)
+
+	for _, sr := range searchResults {
+		for _, item := range sr.Items {
+			if _, found := infohashCheckErrorMap[item.Infohash]; found {
+				continue
 			}
-			log.WarnFi("Reject", "name", item.Name, "link", link, "reason", cachedResultError)
+
+			entry := Entry{
+				Infohash:   item.Infohash,
+				EngineAddr: engineAddr,
+			}
+
+			pool.Submit(func() {
+				var buf bytes.Buffer
+				if err := templ.Execute(&buf, entry); err != nil {
+					resultsCh <- jobResult{infohash: item.Infohash, err: err}
+					return
+				}
+				link := buf.String()
+
+				err := checker.IsAvailable(link, *playlist.CheckRespTimeout, *playlist.UseMpegTsAnalyzer)
+				resultsCh <- jobResult{infohash: item.Infohash, err: err}
+
+				if err == nil {
+					log.InfoFi("Keep", "name", item.Name, "link", link)
+				} else {
+					log.WarnFi("Reject", "name", item.Name, "link", link, "reason", err)
+				}
+			})
+		}
+	}
+
+	pool.StopAndWait()
+
+	close(resultsCh)
+	for r := range resultsCh {
+		infohashCheckErrorMap[r.infohash] = r.err
+	}
+
+	searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
+		if err, ok := infohashCheckErrorMap[item.Infohash]; ok && err != nil {
 			return true
 		}
-		err := checker.IsAvailable(link, *playlist.CheckRespTimeout, *playlist.UseMpegTsAnalyzer)
-		infohashCheckErrorMap[item.Infohash] = err
-		if err == nil {
-			log.InfoFi("Keep", "name", item.Name, "link", link)
-			return false
-		}
-		log.WarnFi("Reject", "name", item.Name, "link", link, "reason", err)
-		return true
+		return false
 	})
+
 	currSources := acestream.GetSourcesAmount(searchResults)
 	log.InfoFi("Rejected", "sources", prevSources-currSources, "by", "response", "playlist", playlist.OutputPath)
 	return searchResults

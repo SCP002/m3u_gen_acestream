@@ -45,6 +45,8 @@ type Playlist struct {
 	RemoveDeadSources            *bool               `yaml:"removeDeadSources"`
 	UseMpegTsAnalyzer            *bool               `yaml:"useMpegTsAnalyzer"`
 	CheckRespTimeout             *time.Duration      `yaml:"checkRespTimeout"`
+	RemoveDeadLinkTemplate       *string             `yaml:"remoaveDeadLinkTemplate"`
+	RemoveDeadWorkers            *int                `yaml:"removeDeadWorkers"`
 }
 
 // Init returns config instance and false if config at `filePath` already exist.
@@ -100,6 +102,10 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 			if _, err := template.New("").Parse(playlist.EntryTemplate); err != nil {
 				return errors.Wrapf(err, "Can not parse template:\n%v\nin entryTemplate", playlist.EntryTemplate)
 			}
+			if _, err := template.New("").Parse(*playlist.RemoveDeadLinkTemplate); err != nil {
+				return errors.Wrapf(err, "Can not parse template:\n%v\nin removeDeadLinkTemplate",
+					playlist.EntryTemplate)
+			}
 		}
 		return nil
 	}
@@ -128,6 +134,22 @@ func Init(log *logger.Logger, filePath string) (*Config, bool, error) {
 				path := fmt.Sprintf("$.playlists[%v].checkRespTimeout", idx)
 				log.InfoFi("Adding new config option", "path", path, "value", defVal, "playlist", playlist.OutputPath)
 				cfg.Playlists[idx].CheckRespTimeout = defVal
+				commentMap[path] = defCommentMap[path]
+				modified = true
+			}
+			if playlist.RemoveDeadLinkTemplate == nil {
+				defVal := lo.ToPtr("http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}")
+				path := fmt.Sprintf("$.playlists[%v].removeDeadLinkTemplate", idx)
+				log.InfoFi("Adding new config option", "path", path, "value", defVal, "playlist", playlist.OutputPath)
+				cfg.Playlists[idx].RemoveDeadLinkTemplate = defVal
+				commentMap[path] = defCommentMap[path]
+				modified = true
+			}
+			if playlist.RemoveDeadWorkers == nil {
+				defVal := lo.ToPtr(1)
+				path := fmt.Sprintf("$.playlists[%v].removeDeadWorkers", idx)
+				log.InfoFi("Adding new config option", "path", path, "value", defVal, "playlist", playlist.OutputPath)
+				cfg.Playlists[idx].RemoveDeadWorkers = defVal
 				commentMap[path] = defCommentMap[path]
 				modified = true
 			}
@@ -169,6 +191,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 	entryMpegtsLink := `http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}` + "\n"
 	entryHlsLink := `http://{{.EngineAddr}}/ace/manifest.m3u8?infohash={{.Infohash}}` + "\n"
 	entryHttpAceProxyLink := `http://127.0.0.1:8000/infohash/{{.Infohash}}/stream.mp4` + "\n"
+	removeDeadLink := `http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}`
 
 	regexpNonDefault := `^(?!.*(informational|entertaining|educational|movies|documentaries|sport|fashion|music|` +
 		`regional|ethnic|religion|teleshop|erotic_18_plus|other_18_plus|cyber_games|amateur|webcam)).*`
@@ -199,6 +222,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				RemoveDeadSources:            lo.ToPtr(false),
 				UseMpegTsAnalyzer:            lo.ToPtr(false),
 				CheckRespTimeout:             lo.ToPtr(time.Second * 20),
+				RemoveDeadLinkTemplate:       lo.ToPtr(removeDeadLink),
+				RemoveDeadWorkers:            lo.ToPtr(1),
 			},
 			{
 				OutputPath:                   "./out/playlist_hls_tv_+_music_+_no_category.m3u8",
@@ -223,6 +248,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				RemoveDeadSources:            lo.ToPtr(false),
 				UseMpegTsAnalyzer:            lo.ToPtr(false),
 				CheckRespTimeout:             lo.ToPtr(time.Second * 20),
+				RemoveDeadLinkTemplate:       lo.ToPtr(removeDeadLink),
+				RemoveDeadWorkers:            lo.ToPtr(1),
 			},
 			{
 				OutputPath:                   "./out/playlist_httpaceproxy_all_but_porn.m3u8",
@@ -247,6 +274,8 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				RemoveDeadSources:            lo.ToPtr(false),
 				UseMpegTsAnalyzer:            lo.ToPtr(false),
 				CheckRespTimeout:             lo.ToPtr(time.Second * 20),
+				RemoveDeadLinkTemplate:       lo.ToPtr(removeDeadLink),
+				RemoveDeadWorkers:            lo.ToPtr(1),
 			},
 		},
 	}
@@ -464,6 +493,23 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 			yaml.HeadComment(
 				"",
 				" Timeout for reading Ace Stream Engine response when removing dead sources.",
+			),
+		},
+		"$.playlists[0].remoaveDeadLinkTemplate": []*yaml.Comment{
+			yaml.HeadComment(
+				"",
+				" Template the link to check when removing dead sources.",
+				" Available variables are:",
+				" {{.Infohash}}",
+				" {{.EngineAddr}}",
+			),
+		},
+		"$.playlists[0].removeDeadWorkers": []*yaml.Comment{
+			yaml.HeadComment(
+				"",
+				" Amount of simultaneous availability checks when removing dead sources.",
+				" Do not set above 1 if using default Ace Stream Engine without proxy.",
+				" If using proxy, change `remoaveDeadLinkTemplate` accordingly.",
 			),
 		},
 		"$.playlists[1]": []*yaml.Comment{

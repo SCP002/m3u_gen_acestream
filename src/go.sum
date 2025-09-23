@@ -1,5 +1,7 @@
 github.com/adampresley/sigint v0.0.0-20150906022118-7e8d2ad16a94 h1:+ZZxOAOgtc5xZjeh4bt2JDKqYH5r91h8dVXF1KZabsU=
 github.com/adampresley/sigint v0.0.0-20150906022118-7e8d2ad16a94/go.mod h1:Z78z6BReSpl2eqVy/IxspW8YxnSkIcK3hXoxhiaaGZ8=
+github.com/alitto/pond/v2 v2.5.0 h1:vPzS5GnvSDRhWQidmj2djHllOmjFExVFbDGCw1jdqDw=
+github.com/alitto/pond/v2 v2.5.0/go.mod h1:xkjYEgQ05RSpWdfSd1nM3OVv7TBhLdy7rMp3+2Nq+yE=
 github.com/cockroachdb/errors v1.11.3 h1:5bA+k2Y6r+oz/6Z/RFlNeVCesGARKuC6YymtcDrbC/I=
 github.com/cockroachdb/errors v1.11.3/go.mod h1:m4UIW4CDjx+R5cybPsNrRbreomiFqt8o1h1wUVazSd8=
 github.com/cockroachdb/logtags v0.0.0-20241215232642-bb51bb14a506 h1:ASDL+UJcILMqgNeV5jiqR4j+sTuvQNHdf2chuKj1M5k=

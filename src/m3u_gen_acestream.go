@@ -22,7 +22,7 @@ import (
 func main() {
 	log := logger.New(logger.FatalLevel, os.Stderr)
 
-	programVersion := "v2.1.1"
+	programVersion := "v2.2.0"
 
 	flags, err := cli.Parse()
 	if flags.Version {
