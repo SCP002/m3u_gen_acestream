@@ -45,7 +45,7 @@ type Playlist struct {
 	RemoveDeadSources            *bool               `yaml:"removeDeadSources"`
 	UseMpegTsAnalyzer            *bool               `yaml:"useMpegTsAnalyzer"`
 	CheckRespTimeout             *time.Duration      `yaml:"checkRespTimeout"`
-	RemoveDeadLinkTemplate       *string             `yaml:"remoaveDeadLinkTemplate"`
+	RemoveDeadLinkTemplate       *string             `yaml:"removeDeadLinkTemplate"`
 	RemoveDeadWorkers            *int                `yaml:"removeDeadWorkers"`
 }
 
@@ -495,7 +495,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				" Timeout for reading Ace Stream Engine response when removing dead sources.",
 			),
 		},
-		"$.playlists[0].remoaveDeadLinkTemplate": []*yaml.Comment{
+		"$.playlists[0].removeDeadLinkTemplate": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
 				" Template the link to check when removing dead sources.",
@@ -509,7 +509,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 				"",
 				" Amount of simultaneous availability checks when removing dead sources.",
 				" Do not set above 1 if using default Ace Stream Engine without proxy.",
-				" If using proxy, change `remoaveDeadLinkTemplate` accordingly.",
+				" If using proxy, change `removeDeadLinkTemplate` accordingly.",
 			),
 		},
 		"$.playlists[1]": []*yaml.Comment{

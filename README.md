@@ -192,6 +192,17 @@ playlists:
   #
   # Timeout for reading Ace Stream Engine response when removing dead sources.
   checkRespTimeout: 20s
+  #
+  # Template the link to check when removing dead sources.
+  # Available variables are:
+  # {{.Infohash}}
+  # {{.EngineAddr}}
+  removeDeadLinkTemplate: http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}
+  #
+  # Amount of simultaneous availability checks when removing dead sources.
+  # Do not set above 1 if using default Ace Stream Engine without proxy.
+  # If using proxy, change `removeDeadLinkTemplate` accordingly.
+  removeDeadWorkers: 1
 #
 # HLS format, only keep tv, music and empty category.
 # Change category 'tv' to 'television' and empty category to 'unknown'.
@@ -226,6 +237,8 @@ playlists:
   removeDeadSources: false
   useMpegTsAnalyzer: false
   checkRespTimeout: 20s
+  removeDeadLinkTemplate: http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}
+  removeDeadWorkers: 1
 #
 # https://github.com/pepsik-kiev/HTTPAceProxy format, all but erotic channels.
 - outputPath: ./out/playlist_httpaceproxy_all_but_porn.m3u8
@@ -259,6 +272,8 @@ playlists:
   removeDeadSources: false
   useMpegTsAnalyzer: false
   checkRespTimeout: 20s
+  removeDeadLinkTemplate: http://{{.EngineAddr}}/ace/getstream?infohash={{.Infohash}}
+  removeDeadWorkers: 1
 ```
 
 ## Build from source code [Go / Golang]
