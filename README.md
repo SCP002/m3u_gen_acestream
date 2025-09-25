@@ -193,7 +193,7 @@ playlists:
   # Timeout for reading Ace Stream Engine response when removing dead sources.
   checkRespTimeout: 20s
   #
-  # Template the link to check when removing dead sources.
+  # Template of the link to check when removing dead sources.
   # Available variables are:
   # {{.Infohash}}
   # {{.EngineAddr}}

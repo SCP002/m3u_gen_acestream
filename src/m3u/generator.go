@@ -432,7 +432,7 @@ func removeDead(log *logger.Logger,
 	}
 
 	pool := pond.NewPool(*playlist.RemoveDeadWorkers)
-	resultsCh := make(chan jobResult, 1024)
+	resultsCh := make(chan jobResult, len(searchResults))
 
 	for _, sr := range searchResults {
 		for _, item := range sr.Items {

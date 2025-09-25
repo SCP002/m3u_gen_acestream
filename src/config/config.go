@@ -498,7 +498,7 @@ func newDefCfg() (*Config, yaml.CommentMap) {
 		"$.playlists[0].removeDeadLinkTemplate": []*yaml.Comment{
 			yaml.HeadComment(
 				"",
-				" Template the link to check when removing dead sources.",
+				" Template of the link to check when removing dead sources.",
 				" Available variables are:",
 				" {{.Infohash}}",
 				" {{.EngineAddr}}",
