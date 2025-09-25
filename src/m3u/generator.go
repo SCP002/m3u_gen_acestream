@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 
@@ -36,7 +37,7 @@ type Entry struct {
 func Generate(log *logger.Logger, searchResults []acestream.SearchResult, cfg *config.Config) error {
 	log.Info("Generating M3U files")
 
-	infohashCheckErrorMap := make(map[string]error)
+	infohashCheckErrorMap := &sync.Map{}
 
 	for _, playlist := range cfg.Playlists {
 		searchResults := remap(log, searchResults, playlist)
@@ -419,24 +420,17 @@ func removeDead(log *logger.Logger,
 	searchResults []acestream.SearchResult,
 	playlist config.Playlist,
 	engineAddr string,
-	infohashCheckErrorMap map[string]error) []acestream.SearchResult {
+	infohashCheckErrorMap *sync.Map) []acestream.SearchResult {
 	log.InfoFi("Removing dead sources", "playlist", playlist.OutputPath)
 	prevSources := acestream.GetSourcesAmount(searchResults)
 	checker := acestream.NewChecker()
 
-	templ := template.Must(template.New("").Parse(*playlist.RemoveDeadLinkTemplate))
-
-	type jobResult struct {
-		infohash string
-		err      error
-	}
-
+	linkTempl := template.Must(template.New("").Parse(*playlist.RemoveDeadLinkTemplate))
 	pool := pond.NewPool(*playlist.RemoveDeadWorkers)
-	resultsCh := make(chan jobResult, len(searchResults))
 
 	for _, sr := range searchResults {
 		for _, item := range sr.Items {
-			if _, found := infohashCheckErrorMap[item.Infohash]; found {
+			if _, found := infohashCheckErrorMap.Load(item.Infohash); found {
 				continue
 			}
 
@@ -446,15 +440,15 @@ func removeDead(log *logger.Logger,
 			}
 
 			pool.Submit(func() {
-				var buf bytes.Buffer
-				if err := templ.Execute(&buf, entry); err != nil {
-					resultsCh <- jobResult{infohash: item.Infohash, err: err}
+				var linkBuff bytes.Buffer
+				if err := linkTempl.Execute(&linkBuff, entry); err != nil {
+					infohashCheckErrorMap.Store(item.Infohash, err)
 					return
 				}
-				link := buf.String()
+				link := linkBuff.String()
 
 				err := checker.IsAvailable(link, *playlist.CheckRespTimeout, *playlist.UseMpegTsAnalyzer)
-				resultsCh <- jobResult{infohash: item.Infohash, err: err}
+				infohashCheckErrorMap.Store(item.Infohash, err)
 
 				if err == nil {
 					log.InfoFi("Keep", "name", item.Name, "link", link)
@@ -467,14 +461,11 @@ func removeDead(log *logger.Logger,
 
 	pool.StopAndWait()
 
-	close(resultsCh)
-	for r := range resultsCh {
-		infohashCheckErrorMap[r.infohash] = r.err
-	}
-
 	searchResults = rejectAcestreamItems(searchResults, func(item acestream.Item, _ int) bool {
-		if err, ok := infohashCheckErrorMap[item.Infohash]; ok && err != nil {
-			return true
+		if v, ok := infohashCheckErrorMap.Load(item.Infohash); ok {
+			if err, _ := v.(error); err != nil {
+				return true
+			}
 		}
 		return false
 	})
