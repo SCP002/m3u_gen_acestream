@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -1125,7 +1126,7 @@ func TestRemoveDead(t *testing.T) {
 		},
 	}
 
-	infohashCheckErrorMap := make(map[string]error)
+	infohashCheckErrorMap := &sync.Map{}
 	for name, test := range tests {
 		actual := removeDead(log, test.input, test.playlist, "127.0.0.1:6878", infohashCheckErrorMap)
 		slices.SortStableFunc(actual, func(a, b acestream.SearchResult) int {
