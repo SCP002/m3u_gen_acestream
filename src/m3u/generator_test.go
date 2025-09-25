@@ -1140,6 +1140,8 @@ func TestRemoveDead(t *testing.T) {
 		consoleBuff.Reset()
 	}
 
-	assert.Contains(t, infohashCheckErrorMap, hashAlive)
-	assert.Contains(t, infohashCheckErrorMap, hashDead)
+    _, ok := infohashCheckErrorMap.Load(hashAlive)
+    assert.True(t, ok, "expected infohashCheckErrorMap to contain %s", hashAlive)
+    _, ok = infohashCheckErrorMap.Load(hashDead)
+    assert.True(t, ok, "expected infohashCheckErrorMap to contain %s", hashDead)
 }
