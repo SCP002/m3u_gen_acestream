@@ -105,7 +105,9 @@ func (e Engine) WaitForConnection(ctx context.Context) {
 			return
 		default:
 		}
-		url := url.URL{Scheme: "http", Host: e.addr, Path: "webui/api/service", RawQuery: "method=get_version"}
+		params := url.Values{}
+		params.Set("method", "get_version")
+		url := url.URL{Scheme: "http", Host: e.addr, Path: "webui/api/service", RawQuery: params.Encode()}
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 		if err != nil {
 			e.log.Error(errors.Wrap(err, "Connect to engine: Create get_version request"))
@@ -164,8 +166,10 @@ func (e Engine) SearchAll(ctx context.Context) ([]SearchResult, error) {
 
 // searchAtPage returns ace stream channels at page `page` with page size defined in engine instance.
 func (e Engine) searchAtPage(ctx context.Context, page int) ([]SearchResult, error) {
-	query := fmt.Sprintf("page_size=%v&page=%v", e.pageSize, page)
-	url := url.URL{Scheme: "http", Host: e.addr, Path: "search", RawQuery: query}
+	params := url.Values{}
+	params.Set("page_size", fmt.Sprint(e.pageSize))
+	params.Set("page", fmt.Sprint(page))
+	url := url.URL{Scheme: "http", Host: e.addr, Path: "search", RawQuery: params.Encode()}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 	if err != nil {
 		return []SearchResult{}, errors.Wrap(err, "Create search request")
