@@ -289,15 +289,15 @@ playlists:
 3. Install dependencies:
 
     ```sh
-    cd src
-    go mod tidy
+    cd m3u_gen_acestream/src
+    go get ./...
     ```
 
-    Or
+    Or:
 
     ```sh
-    cd src
-    go get ./...
+    cd m3u_gen_acestream/src
+    go mod tidy
     ```
 
 4. Update dependencies (optional):
