@@ -43,7 +43,7 @@ func (sr *SearchResult) UnmarshalJSON(bytes []byte) error {
 		return err
 	}
 	*sr = SearchResult(tmp.Embed)
-	sr.Name = fmt.Sprintf("%v", tmp.Name)
+	sr.Name = fmt.Sprint(tmp.Name)
 
 	return nil
 }
