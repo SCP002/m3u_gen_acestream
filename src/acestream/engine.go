@@ -26,25 +26,24 @@ type Engine struct {
 // SearchResult represents available channels response to search request to engine.
 type SearchResult struct {
 	Items []Item `json:"items"`
-	Name  string `json:"name"`
+	Name  AnyStr `json:"name"`
 	Icons []Icon `json:"icons"`
 }
 
-// UnmarshalJSON implements json.Unmarshaller interface and made to deal with problematic Name field which can be both
-// number or string.
-func (sr *SearchResult) UnmarshalJSON(bytes []byte) error {
-	type Embed SearchResult
-	tmp := struct {
-		Embed
-		Name any `json:"name"`
-	}{Embed: Embed(*sr)}
+// AnyStr made to deal with problematic 'name' field which can be both number or string.
+type AnyStr string
 
-	if err := json.Unmarshal(bytes, &tmp); err != nil {
-		return err
+// UnmarshalJSON implements json.Unmarshaller for custom string type.
+func (s *AnyStr) UnmarshalJSON(b []byte) error {
+	// Try to unmarshal as string first.
+	var str string
+	if err := json.Unmarshal(b, &str); err == nil {
+		*s = AnyStr(str)
+		return nil
 	}
-	*sr = SearchResult(tmp.Embed)
-	sr.Name = fmt.Sprint(tmp.Name)
 
+	// Fallback: treat anything else as string.
+	*s = AnyStr(string(b))
 	return nil
 }
 

@@ -1130,7 +1130,7 @@ func TestRemoveDead(t *testing.T) {
 	for name, test := range tests {
 		actual := removeDead(log, test.input, test.playlist, "127.0.0.1:6878", infohashCheckErrorMap)
 		slices.SortStableFunc(actual, func(a, b acestream.SearchResult) int {
-			return strings.Compare(a.Name, b.Name)
+			return strings.Compare(string(a.Name), string(b.Name))
 		})
 		assert.Exactly(t, test.expected, actual, fmt.Sprintf("Bad returned value in test '%v'", name))
 		msg := fmt.Sprintf("Bad log output in test '%v'", name)
