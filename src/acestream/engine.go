@@ -43,7 +43,7 @@ func (s *AnyStr) UnmarshalJSON(b []byte) error {
 	}
 
 	// Fallback: treat anything else as string.
-	*s = AnyStr(string(b))
+	*s = AnyStr(b)
 	return nil
 }
 
